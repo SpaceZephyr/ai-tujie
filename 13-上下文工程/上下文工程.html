@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>上下文工程 · 3:4 图组</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --or: #ef6a1c;
+  --or-soft: #fff1e7;
+  --or-line: #f6b58c;
+  --ink: #17161a;
+  --ink-2: #3b3a40;
+  --ink-3: #75737c;
+  --line: #e7e5e2;
+  --bg: #f6f5f2;
+  --card: #ffffff;
+  --shadow: 0 10px 30px rgba(40, 30, 20, .07), 0 2px 6px rgba(40, 30, 20, .04);
+  --sans: "PingFang SC", -apple-system, "Hiragino Sans GB", sans-serif;
+}
+body { text-wrap: pretty; background: #d9d7d3; font-family: var(--sans); color: var(--ink); padding: 40px 0; }
+body.only { padding: 0; background: var(--bg); }
+.page {
+  width: 1080px; height: 1440px; margin: 0 auto 40px; position: relative; overflow: hidden;
+  background: var(--bg); padding: 84px 84px 0;
+}
+body.only .page { margin: 0; }
+body.only .page:not(.show) { display: none; }
+
+/* 背景：角落点阵 + 电路线 */
+.page::before, .page::after { content: ""; position: absolute; pointer-events: none; }
+.page::before {
+  top: 0; right: 0; width: 360px; height: 300px;
+  background-image: radial-gradient(#d9d6d0 1.6px, transparent 1.7px);
+  background-size: 18px 18px;
+  -webkit-mask-image: radial-gradient(ellipse at top right, #000 10%, transparent 70%);
+}
+.page::after {
+  bottom: 0; left: 0; width: 320px; height: 260px;
+  background-image: radial-gradient(#dcd9d3 1.6px, transparent 1.7px);
+  background-size: 18px 18px;
+  -webkit-mask-image: radial-gradient(ellipse at bottom left, #000 10%, transparent 70%);
+}
+.circuit { position: absolute; pointer-events: none; opacity: .55; }
+
+/* 页脚 */
+.foot {
+  position: absolute; left: 84px; right: 84px; bottom: 56px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 22px; color: var(--ink-3); letter-spacing: .5px;
+}
+.foot b { color: var(--ink-2); font-weight: 600; }
+.foot .pn { font-variant-numeric: tabular-nums; }
+.foot .pn em { font-style: normal; color: var(--or); font-weight: 700; }
+
+/* ============ 封面 ============ */
+.cover-title { text-align: center; white-space: nowrap; font-size: 100px; font-weight: 600; line-height: 1.1; letter-spacing: 0; -webkit-text-stroke: 2.4px currentColor; }
+.cover-title .o { color: var(--or); }
+.cover-sub {
+  display: flex; align-items: center; justify-content: center; gap: 22px;
+  margin-top: 22px; font-size: 34px; color: var(--ink-2); letter-spacing: 4px; font-weight: 500;
+}
+.cover-sub i { display: block; width: 90px; height: 2px; background: var(--or); position: relative; }
+.cover-sub i::after { content: ""; position: absolute; top: -5px; width: 12px; height: 12px; border-radius: 50%; background: var(--or); }
+.cover-sub i.l::after { right: 0; }
+.cover-sub i.r::after { left: 0; }
+
+.task {
+  width: 520px; height: 96px; margin: 40px auto 0; background: var(--card); border-radius: 26px;
+  box-shadow: var(--shadow); display: flex; align-items: center; gap: 22px; padding: 0 34px;
+}
+.task .t1 { font-size: 34px; font-weight: 800; }
+.task .t2 { font-size: 24px; color: var(--ink-3); margin-top: 2px; }
+.task .t2 b { color: var(--or); font-weight: 600; }
+.down { width: 2px; height: 46px; margin: 0 auto; position: relative;
+  background: repeating-linear-gradient(to bottom, var(--or) 0 7px, transparent 7px 13px); }
+.down::after { content: ""; position: absolute; left: -11px; bottom: -6px;
+  border: 12px solid transparent; border-top: 16px solid var(--or); border-bottom: 0; }
+
+.loop { position: relative; width: 912px; height: 700px; margin: 6px auto 0; }
+.loop svg.ring { position: absolute; inset: 0; overflow: visible; }
+.node {
+  position: absolute; width: 250px; height: 120px; background: var(--card); border-radius: 60px;
+  box-shadow: var(--shadow); display: flex; align-items: center; gap: 16px; padding: 0 22px 0 18px;
+}
+.node .ic { width: 80px; height: 80px; border-radius: 50%; background: var(--or-soft); display: grid; place-items: center; flex: none; }
+.node .nm { font-size: 36px; font-weight: 800; line-height: 1.1; }
+.node .nm span { font-size: 20px; color: var(--or); font-weight: 700; margin-right: 6px; vertical-align: 4px; }
+.node .ds { font-size: 20px; color: var(--ink-3); line-height: 1.35; margin-top: 4px; }
+.n1 { left: 331px; top: 10px; }
+.n2 { left: 661px; top: 220px; }
+.n3 { left: 331px; top: 430px; }
+.n4 { left: 1px; top: 220px; }
+
+.hub {
+  position: absolute; left: 306px; top: 180px; width: 300px; height: 200px;
+  clip-path: polygon(14% 0, 86% 0, 100% 20%, 100% 80%, 86% 100%, 14% 100%, 0 80%, 0 20%);
+  background: var(--or); display: grid; place-items: center;
+}
+.hub-in {
+  position: absolute; left: 309px; top: 183px; width: 294px; height: 194px;
+  clip-path: polygon(14% 0, 86% 0, 100% 20%, 100% 80%, 86% 100%, 14% 100%, 0 80%, 0 20%);
+  background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.hub-in .h1 { font-size: 46px; font-weight: 600; -webkit-text-stroke: 1px currentColor; color: var(--or); letter-spacing: 2px; }
+.hub-in .h2 { font-size: 22px; color: var(--ink-2); margin-top: 4px; font-weight: 500; }
+.hub-in .stack { display: flex; gap: 6px; margin-top: 14px; align-items: flex-end; }
+.hub-in .stack i { display: block; width: 18px; background: var(--or-line); border-radius: 3px; }
+
+.lbl { position: absolute; font-size: 21px; color: var(--ink-3); font-weight: 500; background: var(--bg); padding: 2px 8px; }
+.lbl b { color: var(--or); font-weight: 700; }
+
+.answer {
+  position: absolute; left: 216px; top: 604px; width: 480px; height: 96px; background: var(--card);
+  border-radius: 26px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 22px; padding: 0 34px;
+}
+.answer .t1 { font-size: 34px; font-weight: 800; }
+.answer .t2 { font-size: 24px; color: var(--ink-3); margin-top: 2px; }
+.answer .t2 b { color: var(--or); font-weight: 600; }
+
+.quote {
+  margin: 34px 0 0; height: 116px; background: var(--card); border-radius: 30px; box-shadow: var(--shadow);
+  display: flex; align-items: center; justify-content: center; gap: 26px; font-size: 36px; font-weight: 700;
+}
+.quote .qm { font-size: 92px; color: var(--or); font-weight: 900; line-height: 1; height: 58px; font-family: Georgia, serif; }
+.quote .o { color: var(--or); }
+
+/* ============ 文字页 ============ */
+.kicker { display: flex; align-items: center; gap: 14px; font-size: 24px; color: var(--or); font-weight: 700; letter-spacing: 2px; }
+.kicker::before { content: ""; width: 34px; height: 3px; background: var(--or); }
+.h { font-size: 76px; font-weight: 600; line-height: 1.25; margin-top: 22px; letter-spacing: 1px; -webkit-text-stroke: 1.6px currentColor; }
+.h .o { color: var(--or); }
+.lead { font-size: 32px; line-height: 1.75; color: var(--ink-2); margin-top: 26px; }
+.lead b { color: var(--ink); font-weight: 700; }
+.lead .o, .body .o { color: var(--or); font-weight: 700; }
+
+.sheet { background: var(--card); border-radius: 32px; box-shadow: var(--shadow); padding: 44px 48px; margin-top: 40px; }
+
+.steps { display: grid; gap: 34px; }
+.step { display: grid; grid-template-columns: 96px 1fr; column-gap: 10px; }
+.step .no { font-size: 52px; font-weight: 600; -webkit-text-stroke: 1px currentColor; color: var(--or); line-height: 1; font-variant-numeric: tabular-nums; }
+.step .tt { font-size: 38px; font-weight: 800; line-height: 1.2; }
+.step .tx { font-size: 29px; line-height: 1.7; color: var(--ink-2); margin-top: 8px; }
+.step .tx b { color: var(--ink); }
+.step.key { background: var(--or-soft); border-radius: 22px; margin: -18px -24px; padding: 18px 24px; }
+.step .tag { font-size: 22px; font-weight: 600; color: #fff; background: var(--or); border-radius: 8px; padding: 3px 12px; margin-left: 16px; vertical-align: 6px; }
+
+.note { margin-top: 36px; display: flex; gap: 22px; align-items: flex-start; font-size: 30px; line-height: 1.72; color: var(--ink-2); }
+.note .ic { flex: none; width: 64px; height: 64px; border-radius: 50%; background: var(--or); display: grid; place-items: center; margin-top: 4px; }
+.note b { color: var(--ink); }
+
+/* 现象页 */
+.sym { display: grid; gap: 24px; margin-top: 36px; }
+.sym-row { background: var(--card); border-radius: 30px; box-shadow: var(--shadow); padding: 32px 44px 32px 40px; display: grid; grid-template-columns: 84px 1fr; column-gap: 14px; }
+.sym-row .ic { width: 72px; height: 72px; border-radius: 50%; background: var(--or-soft); display: grid; place-items: center; }
+.sym-row .s1 { font-size: 36px; font-weight: 800; line-height: 1.35; }
+.sym-row .s2 { font-size: 28px; color: var(--ink-3); line-height: 1.65; margin-top: 10px; }
+.sym-row .s2 b { color: var(--or); font-weight: 700; }
+.sym-row .go { font-size: 22px; color: var(--ink-3); margin-top: 14px; letter-spacing: 1px; }
+
+/* 记忆页 */
+.win { display: grid; grid-template-columns: 330px 1fr; gap: 40px; align-items: center; }
+.ctx { background: #fbfaf8; border: 2px solid var(--line); border-radius: 22px; padding: 18px; display: grid; gap: 10px; }
+.ctx .r { height: 46px; border-radius: 10px; background: var(--or-soft); color: var(--ink-2); font-size: 20px; display: flex; align-items: center; padding: 0 16px; gap: 10px; }
+.ctx .r em { font-style: normal; color: var(--or); font-weight: 700; font-size: 18px; }
+.ctx .r.fade { background: repeating-linear-gradient(135deg, #f1efec 0 8px, #fbfaf8 8px 16px); color: #aaa7a0; border: 1.5px dashed #d6d2cc; }
+.ctx .cap { font-size: 19px; color: var(--ink-3); text-align: center; margin-top: 4px; }
+.win .say { font-size: 30px; line-height: 1.75; color: var(--ink-2); }
+.win .say b { color: var(--ink); }
+.two { display: grid; gap: 30px; margin-top: 40px; }
+.two .it { display: grid; grid-template-columns: 70px 1fr; }
+.two .it .k { width: 52px; height: 52px; border-radius: 14px; background: var(--or); color: #fff; font-size: 28px; font-weight: 800; display: grid; place-items: center; margin-top: 4px; }
+.two .it .tt { font-size: 34px; font-weight: 800; line-height: 1.4; }
+.two .it .tx { font-size: 28px; line-height: 1.7; color: var(--ink-2); margin-top: 8px; }
+
+/* 停止页 */
+.brakes { display: grid; gap: 26px; }
+.brake { display: grid; grid-template-columns: 76px 1fr; column-gap: 16px; }
+.brake .ic { width: 68px; height: 68px; border-radius: 50%; background: var(--or-soft); display: grid; place-items: center; }
+.brake .tt { font-size: 36px; font-weight: 800; line-height: 1.3; }
+.brake .tt small { font-size: 24px; font-weight: 600; color: var(--or); margin-left: 12px; }
+.brake .tx { font-size: 28px; line-height: 1.68; color: var(--ink-2); margin-top: 6px; }
+.retry { margin-top: 40px; }
+.retry .tt { font-size: 34px; font-weight: 800; }
+.retry .tt .o { color: var(--or); }
+.cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 20px; }
+.cmp > div { border-radius: 24px; padding: 26px 30px; font-size: 26px; line-height: 1.6; }
+.cmp .bad { background: #efedea; color: var(--ink-3); }
+.cmp .good { background: var(--card); box-shadow: var(--shadow); color: var(--ink-2); }
+.cmp .tag { font-size: 22px; font-weight: 700; letter-spacing: 1px; margin-bottom: 8px; }
+.cmp .bad .tag { color: #9a968f; }
+.cmp .good .tag { color: var(--or); }
+.cmp code { font-family: "SF Mono", Menlo, monospace; font-size: 22px; background: var(--or-soft); color: var(--or); padding: 1px 8px; border-radius: 6px; }
+.cmp .bad code { background: #e2dfda; color: #8b877f; }
+
+/* 成本页 */
+.bars { display: flex; align-items: flex-end; gap: 12px; height: 170px; margin-top: 10px; padding: 0 4px; }
+.bars .b { flex: 1; background: var(--or-line); border-radius: 6px 6px 0 0; position: relative; }
+.bars .b .hist { position: absolute; left: 0; right: 0; bottom: 0; background: #f9d9c3; border-radius: 6px 6px 0 0; }
+.bars .b .new { position: absolute; left: 0; right: 0; background: var(--or); border-radius: 6px 6px 0 0; }
+.axis { display: flex; justify-content: space-between; font-size: 20px; color: var(--ink-3); margin-top: 12px; padding: 0 4px; }
+.legend { display: flex; gap: 28px; font-size: 21px; color: var(--ink-3); margin-top: 16px; }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.legend i { width: 18px; height: 18px; border-radius: 4px; display: inline-block; }
+.calc { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-top: 22px; }
+.calc .big { font-size: 60px; font-weight: 600; -webkit-text-stroke: 1px currentColor; color: var(--or); font-variant-numeric: tabular-nums; letter-spacing: -1px; }
+.calc .eq { font-size: 30px; color: var(--ink-2); }
+.save { margin-top: 30px; }
+.save .tt { font-size: 34px; font-weight: 800; }
+.save ol { list-style: none; margin-top: 12px; display: grid; gap: 4px; }
+.save li { font-size: 29px; line-height: 1.6; color: var(--ink-2); display: grid; grid-template-columns: 46px 1fr; }
+.save li span { color: var(--or); font-weight: 800; }
+
+/* 收尾页 */
+.formula { display: flex; align-items: center; justify-content: center; gap: 18px; margin-top: 64px; flex-wrap: wrap; }
+.formula .p { background: var(--card); box-shadow: var(--shadow); border-radius: 26px; padding: 26px 30px; text-align: center; min-width: 190px; }
+.formula .p .a { font-size: 40px; font-weight: 900; }
+.formula .p .b { font-size: 21px; color: var(--ink-3); margin-top: 4px; }
+.formula .op { font-size: 48px; font-weight: 900; color: var(--or); }
+.formula .res { background: var(--or); color: #fff; border-radius: 26px; padding: 26px 30px; text-align: center; margin-top: 18px; width: 100%; }
+.formula .res .a { font-size: 40px; font-weight: 900; }
+.formula .res .b { font-size: 22px; opacity: .9; margin-top: 4px; }
+.pair { margin-top: 64px; display: grid; gap: 26px; font-size: 34px; line-height: 1.7; color: var(--ink-2); }
+.pair b { color: var(--ink); }
+.next { margin-top: 72px; }
+.next .tt { font-size: 24px; color: var(--ink-3); letter-spacing: 3px; font-weight: 700; }
+.next ul { list-style: none; margin-top: 18px; display: grid; gap: 16px; }
+.next li { display: flex; align-items: baseline; gap: 18px; font-size: 29px; color: var(--ink-2); }
+.next li b { color: var(--ink); font-weight: 800; flex: none; }
+.next li b::after { content: " →"; color: var(--or); }
+
+/* ============ 行业划分 · 封面 ============ */
+.user-pill { width: 470px; height: 84px; margin: 34px 0 0 calc((912px - 82px - 470px) / 2); background: var(--card); border-radius: 42px; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center; gap: 16px; font-size: 30px; font-weight: 600; }
+.user-pill small { font-size: 22px; color: var(--ink-3); font-weight: 400; }
+.user-pill small b { color: var(--or); font-weight: 600; }
+.down.l { margin: 0 0 0 calc((912px - 82px) / 2); }
+.stackwrap { display: flex; gap: 18px; margin-top: 8px; }
+.stack { flex: 1; display: grid; gap: 14px; }
+.layer { height: 116px; background: var(--card); border-radius: 26px; box-shadow: var(--shadow); display: grid; grid-template-columns: 72px 1fr 210px; align-items: center; column-gap: 18px; padding: 0 26px 0 20px; }
+.layer .ic { width: 72px; height: 72px; border-radius: 50%; background: var(--or-soft); display: grid; place-items: center; }
+.layer .nm { font-size: 34px; font-weight: 600; line-height: 1.15; display: flex; align-items: center; gap: 12px; }
+.layer .nm .tg { font-size: 19px; font-weight: 600; color: var(--or); background: var(--or-soft); border-radius: 7px; padding: 2px 10px; }
+.layer .ds { font-size: 21px; color: var(--ink-3); margin-top: 6px; }
+.layer .dots { display: flex; flex-wrap: wrap; gap: 7px; justify-content: flex-end; align-content: center; }
+.layer .dots i { width: 13px; height: 13px; border-radius: 50%; background: var(--or-line); display: block; }
+.layer .dots i.b { width: 30px; height: 30px; background: var(--or); }
+.layer.base { background: var(--ink); }
+.layer.base .nm { color: #fff; }
+.layer.base .ds { color: #b9b6bf; }
+.layer.base .ic { background: #2c2a31; }
+.layer.base .nm .tg { background: var(--or); color: #fff; }
+.money { width: 64px; position: relative; display: flex; justify-content: center; }
+.money::before { content: ""; position: absolute; top: 6px; bottom: 22px; left: 31px; width: 3px; background: repeating-linear-gradient(to bottom, var(--or) 0 9px, transparent 9px 16px); }
+.money::after { content: ""; position: absolute; bottom: 4px; left: 20px; border: 13px solid transparent; border-top: 18px solid var(--or); border-bottom: 0; }
+.money span { position: relative; writing-mode: vertical-rl; background: var(--bg); color: var(--or); font-size: 26px; font-weight: 600; letter-spacing: 8px; padding: 14px 0; margin-top: 200px; height: fit-content; }
+.stack-cap { display: flex; justify-content: space-between; font-size: 20px; color: var(--ink-3); margin: 14px 82px 0 6px; }
+.stack-cap i { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--or-line); margin-right: 8px; vertical-align: 1px; }
+
+/* 五层表 */
+.ltable { display: grid; }
+.lrow { display: grid; grid-template-columns: 168px 1fr; column-gap: 18px; padding: 30px 0; border-top: 1.5px solid var(--rule, #efedea); }
+.lrow:first-child { border-top: 0; padding-top: 0; }
+.lrow:last-child { padding-bottom: 0; }
+.lrow .ln { font-size: 34px; font-weight: 600; line-height: 1.3; }
+.lrow .ln small { display: block; font-size: 20px; color: var(--or); font-weight: 600; margin-bottom: 2px; letter-spacing: 1px; }
+.lrow .lt { font-size: 27px; line-height: 1.62; color: var(--ink-2); }
+.lrow .lt b { color: var(--ink); font-weight: 600; }
+.lrow .lt em { font-style: normal; color: var(--ink-3); font-size: 24px; display: block; margin-top: 2px; }
+
+/* 钱往下流 */
+.flow { display: flex; flex-direction: column; align-items: center; }
+.fnode { width: 520px; height: 96px; border-radius: 26px; background: var(--card); box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center; gap: 16px; font-size: 32px; font-weight: 600; }
+.fnode small { font-size: 22px; color: var(--ink-3); font-weight: 400; }
+.fnode.top { background: var(--or); color: #fff; }
+.fnode.top small { color: #ffe3d2; }
+.fnode.bot { background: var(--ink); color: #fff; }
+.fnode.bot small { color: #b9b6bf; }
+.farrow { height: 74px; width: 520px; position: relative; }
+.farrow::before { content: ""; position: absolute; left: 259px; top: 6px; bottom: 16px; width: 3px; background: var(--or); }
+.farrow::after { content: ""; position: absolute; left: 249px; bottom: 4px; border: 11px solid transparent; border-top: 15px solid var(--or); border-bottom: 0; }
+.farrow span { position: absolute; left: 290px; top: 50%; transform: translateY(-50%); font-size: 24px; color: var(--or); font-weight: 600; white-space: nowrap; }
+.farrow span em { font-style: normal; color: var(--ink-3); font-weight: 400; margin-left: 10px; font-size: 22px; }
+.side-note { margin-top: 26px; font-size: 24px; color: var(--ink-3); text-align: center; }
+
+/* 推论 */
+.infer { display: grid; gap: 30px; }
+.infer .it { display: grid; grid-template-columns: 70px 1fr; }
+.infer .it .k { width: 52px; height: 52px; border-radius: 14px; background: var(--or); color: #fff; font-size: 28px; font-weight: 600; display: grid; place-items: center; margin-top: 4px; }
+.infer .it .tt { font-size: 35px; font-weight: 600; line-height: 1.38; }
+.infer .it .tx { font-size: 28px; line-height: 1.68; color: var(--ink-2); margin-top: 8px; }
+.infer .it.key { background: var(--or-soft); border-radius: 24px; margin: -22px -26px; padding: 22px 26px; }
+.moat { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+.moat span { font-size: 24px; background: var(--card); box-shadow: var(--shadow); border-radius: 12px; padding: 8px 16px; color: var(--ink-2); }
+
+/* 对号入座表 */
+.seat { width: 100%; border-collapse: collapse; }
+.seat th { text-align: left; font-size: 21px; color: var(--ink-3); font-weight: 600; padding: 0 0 14px; letter-spacing: 1px; }
+.seat td { vertical-align: top; padding: 18px 0; border-top: 1.5px solid #efedea; font-size: 24px; line-height: 1.55; color: var(--ink-2); }
+.seat td:first-child { font-size: 29px; font-weight: 600; color: var(--ink); width: 150px; }
+.seat td:nth-child(2) { padding-right: 26px; width: 340px; }
+.seat tr.me td:first-child { color: var(--or); }
+.forms { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 32px; }
+.forms > div:first-child { grid-column: 1 / -1; }
+.forms .ft { font-size: 24px; color: var(--ink-3); font-weight: 600; letter-spacing: 2px; }
+.forms .fc { background: var(--card); box-shadow: var(--shadow); border-radius: 24px; padding: 22px 28px; }
+.forms .fc b { display: block; font-size: 32px; font-weight: 600; color: var(--ink); }
+.forms .fc span { display: block; font-size: 25px; color: var(--ink-3); margin-top: 8px; line-height: 1.5; }
+.remind { margin-top: 34px; font-size: 28px; line-height: 1.7; color: var(--ink-2); }
+.remind b { color: var(--ink); }
+.src { margin-top: 22px; font-size: 20px; color: var(--ink-3); line-height: 1.6; }
+
+/* ============ 文字叙述页（优先用这一套） ============ */
+.intro { font-size: 30px; line-height: 1.75; color: var(--ink-2); margin-top: 24px; }
+.intro b { color: var(--ink); font-weight: 600; }
+.sec { margin-top: 32px; }
+.sec .lb { display: flex; align-items: center; gap: 10px; font-size: 23px; color: var(--or); font-weight: 600; letter-spacing: 2px; margin-bottom: 8px; }
+.sec .lb::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--or); }
+.sec p { font-size: 28px; line-height: 1.7; color: var(--ink-2); }
+.sec p b { color: var(--ink); font-weight: 600; }
+.colist { background: var(--card); border-radius: 24px; box-shadow: var(--shadow); padding: 30px 36px; display: grid; gap: 14px; }
+.colist .row { font-size: 28px; line-height: 1.6; color: var(--ink-2); }
+.colist .row b { color: var(--ink); font-weight: 600; }
+.h.h1 { font-size: 72px; line-height: 1.2; margin-top: 18px; }
+.para { font-size: 30px; line-height: 1.8; color: var(--ink-2); margin-top: 34px; }
+.para b { color: var(--ink); font-weight: 600; }
+.para + .colist { margin-top: 18px; }
+.h1 + .intro { margin-top: 36px; font-size: 32px; line-height: 1.8; }
+.colist + .para { margin-top: 36px; }
+</style>
+</head>
+<body>
+
+<!-- 可复用图标 -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <marker id="ah" viewBox="0 0 12 12" refX="7" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+      <path d="M1 1 L11 6 L1 11 Z" fill="#ef6a1c"/>
+    </marker>
+    <symbol id="i-think" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 7a12 12 0 0 0-7 21.7c1.4 1 2.2 2.4 2.2 4V35h9.6v-2.3c0-1.6.8-3 2.2-4A12 12 0 0 0 24 7z"/><path d="M19.5 40h9M21 44h6"/><path d="M24 15v7l4 3"/></g></symbol>
+    <symbol id="i-do" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M29 8a9 9 0 0 0-8.6 11.7L8 32.1a3.5 3.5 0 0 0 5 5l12.4-12.4A9 9 0 0 0 37 16.5l-5.5 5.5-5-1-1-5L31 10.4A9 9 0 0 0 29 8z"/></g></symbol>
+    <symbol id="i-see" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 24s7.3-13 20-13 20 13 20 13-7.3 13-20 13S4 24 4 24z"/><circle cx="24" cy="24" r="6"/></g></symbol>
+    <symbol id="i-again" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M38 20A15 15 0 0 0 10.6 15M10 28a15 15 0 0 0 27.4 5"/><path d="M10 7v8h8M38 41v-8h-8"/></g></symbol>
+    <symbol id="i-chat" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10h32a3 3 0 0 1 3 3v18a3 3 0 0 1-3 3H22l-9 7v-7H8a3 3 0 0 1-3-3V13a3 3 0 0 1 3-3z"/><path d="M15 20h18M15 26h11"/></g></symbol>
+    <symbol id="i-flag" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="18"/><path d="M16 24.5l5.5 5.5L33 18.5"/></g></symbol>
+    <symbol id="i-stop" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="18"/><path d="M16 24.5l5.5 5.5L33 18.5"/></g></symbol>
+    <symbol id="i-count" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="34" height="34" rx="6"/><path d="M15 17h18M15 24h18M15 31h10"/></g></symbol>
+    <symbol id="i-clock" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="17"/><path d="M24 14v10l7 5"/></g></symbol>
+    <symbol id="i-pause" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="17"/><path d="M20 17v14M28 17v14"/></g></symbol>
+    <symbol id="i-bill" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 6h26v36l-4.3-3-4.4 3-4.3-3-4.3 3-4.4-3-4.3 3z"/><path d="M17 16h14M17 23h14M17 30h8"/></g></symbol>
+    <symbol id="i-bulb" viewBox="0 0 48 48"><g fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M24 8a11 11 0 0 0-6.4 20c1.3.9 2 2.3 2 3.8V34h8.8v-2.2c0-1.5.7-2.9 2-3.8A11 11 0 0 0 24 8z"/><path d="M20 39h8"/></g></symbol>
+    <symbol id="i-chip" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="12" y="12" width="24" height="24" rx="4"/><rect x="19" y="19" width="10" height="10" rx="1.5"/><path d="M18 6v6M24 6v6M30 6v6M18 36v6M24 36v6M30 36v6M6 18h6M6 24h6M6 30h6M36 18h6M36 24h6M36 30h6"/></g></symbol>
+    <symbol id="i-model" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 5l16 9v20l-16 9-16-9V14z"/><path d="M8 14l16 9 16-9M24 23v20"/></g></symbol>
+    <symbol id="i-infra" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 6L42 15 24 24 6 15z"/><path d="M6 24l18 9 18-9M6 33l18 9 18-9"/></g></symbol>
+    <symbol id="i-agent" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="15" width="30" height="24" rx="7"/><circle cx="18.5" cy="27" r="3"/><circle cx="29.5" cy="27" r="3"/><path d="M24 15V9"/><circle cx="24" cy="7" r="2.5"/><path d="M5 25v6M43 25v6"/></g></symbol>
+    <symbol id="i-app" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="14" height="14" rx="3.5"/><rect x="27" y="7" width="14" height="14" rx="3.5"/><rect x="7" y="27" width="14" height="14" rx="3.5"/><rect x="27" y="27" width="14" height="14" rx="3.5"/></g></symbol>
+    <symbol id="i-user" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="16" r="8"/><path d="M8 42c1.5-9 8-14 16-14s14.5 5 16 14"/></g></symbol>
+    <symbol id="i-warn" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 7L43 40H5z"/><path d="M24 19v10M24 34v.5"/></g></symbol>
+    <symbol id="i-down" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 30l10-10 8 8 14-14"/><path d="M40 14v9M40 14h-9" transform="rotate(90 40 14) translate(0 0)"/></g></symbol>
+    <symbol id="i-search" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="21" cy="21" r="12"/><path d="M30 30l10 10"/></g></symbol>
+    <symbol id="i-mem" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8h16a4 4 0 0 1 4 4v28l-12-6-12 6V12a4 4 0 0 1 4-4z"/><path d="M20 18h8M20 24h8"/></g></symbol>
+    <symbol id="i-edit" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 40l4.2-14.6L32 5.6a4 4 0 0 1 5.7 0l4.7 4.7a4 4 0 0 1 0 5.7L23.6 35.8z"/><path d="M28 10l10 10"/></g></symbol>
+  </defs>
+</svg>
+
+<style>
+.intro, .h1 + .intro { font-size: 34px; line-height: 1.8; }
+.para { font-size: 32px; line-height: 1.8; margin-top: 32px; }
+.colist .row { font-size: 29px; }
+.hubwrap { position: relative; width: 912px; height: 620px; margin: 12px auto 0; }
+.hubwrap svg.spokes { position: absolute; inset: 0; overflow: visible; }
+.spoke {
+  position: absolute; width: 268px; height: 100px;
+  background: var(--card); border-radius: 50px; box-shadow: var(--shadow);
+  display: flex; align-items: center; gap: 14px; padding: 0 20px 0 16px;
+}
+.spoke .ic { width: 64px; height: 64px; border-radius: 50%; background: var(--or-soft); display: grid; place-items: center; flex: none; }
+.spoke .nm { font-size: 28px; font-weight: 600; line-height: 1.1; white-space: nowrap; }
+.spoke .ds { font-size: 20px; color: var(--ink-3); margin-top: 4px; white-space: nowrap; }
+.spoke.now { background: var(--or); }
+.spoke.now .nm, .spoke.now .ds { color: #fff; }
+.spoke.now .ds { opacity: .85; }
+.spoke.now .ic { background: #ff8a3d; }
+.spoke.now .ic svg, .desk .r.now .ic svg { filter: brightness(0) invert(1); }
+.s1 { left: 86px; top: 8px; }
+.s2 { left: 558px; top: 8px; }
+.s3 { left: 0; top: 248px; }
+.s4 { left: 644px; top: 248px; }
+.s5 { left: 86px; top: 488px; }
+.s6 { left: 558px; top: 488px; }
+.hubwrap .hub { left: 306px; top: 210px; width: 300px; height: 200px; }
+.hubwrap .hub-in { left: 309px; top: 213px; width: 294px; height: 194px; }
+.hubwrap .hub-in .h1 { font-size: 48px; }
+.hub-cap { display: flex; justify-content: space-between; font-size: 20px; color: var(--ink-3); margin-top: 16px; padding: 0 8px; }
+.quote.sm { height: 100px; margin-top: 18px; font-size: 34px; }
+.desk { display: grid; gap: 14px; margin-top: 36px; }
+.desk .r {
+  display: grid; grid-template-columns: 56px 1fr 150px; align-items: center;
+  background: var(--card); border-radius: 24px; box-shadow: var(--shadow);
+  padding: 20px 28px; min-height: 92px;
+}
+.desk .r .ic { width: 56px; height: 56px; border-radius: 50%; background: var(--or-soft); display: grid; place-items: center; }
+.desk .r .nm { font-size: 30px; font-weight: 600; }
+.desk .r .ds { font-size: 24px; color: var(--ink-3); margin-top: 4px; }
+.desk .r .tg { font-size: 22px; color: var(--ink-3); font-weight: 600; text-align: right; }
+.desk .r .tg.grow { color: var(--or); }
+.desk .r.now { background: var(--or); }
+.desk .r.now .nm, .desk .r.now .ds, .desk .r.now .tg { color: #fff; }
+.desk .r.now .ds { opacity: .9; }
+.desk .r.now .ic { background: #ff8a3d; }
+.budget { display: flex; height: 84px; border-radius: 20px; overflow: hidden; margin-top: 28px; box-shadow: var(--shadow); }
+.budget span { display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 600; text-align: center; line-height: 1.25; padding: 0 6px; }
+.budget .a { width: 14%; background: #fff1e7; color: var(--or); }
+.budget .b { width: 16%; background: #f6b58c; color: #fff; }
+.budget .c { width: 26%; background: var(--or); color: #fff; }
+.budget .d { width: 14%; background: #17161a; color: #fff; }
+.budget .e { width: 30%; background: repeating-linear-gradient(135deg, #f1efec 0 8px, #fbfaf8 8px 16px); color: var(--ink-3); }
+.bcap { display: flex; justify-content: space-between; font-size: 20px; color: var(--ink-3); margin-top: 12px; }
+.attn { margin-top: 32px; display: grid; gap: 14px; }
+.attn .band { border-radius: 24px; padding: 26px 36px; display: flex; align-items: center; justify-content: space-between; }
+.attn .hi { background: var(--card); box-shadow: var(--shadow); min-height: 110px; }
+.attn .lo {
+  min-height: 220px; border: 2px dashed #d6d2cc;
+  background: repeating-linear-gradient(135deg, #f1efec 0 8px, #fbfaf8 8px 16px);
+}
+.attn .nm { font-size: 34px; font-weight: 600; }
+.attn .ds { font-size: 24px; color: var(--ink-3); margin-top: 6px; }
+.attn .tg { font-size: 24px; font-weight: 600; color: var(--or); flex: none; margin-left: 24px; }
+.attn .lo .nm, .attn .lo .tg { color: #9a968f; }
+.cmp { margin-top: 28px; }
+.cmp > div { font-size: 27px; line-height: 1.65; padding: 28px 32px; min-height: 0; }
+.cmp .tag { font-size: 24px; margin-bottom: 12px; }
+.cmp .line { margin-top: 10px; }
+.cmp .line em { display: block; font-style: normal; color: var(--ink-3); font-size: 24px; margin-top: 2px; }
+</style>
+
+<!-- ================= P1 封面：中枢图 ================= -->
+<section class="page" id="p1">
+  <svg class="circuit" style="left:0;top:150px" width="160" height="220" viewBox="0 0 160 220"><g fill="none" stroke="#d2cec7" stroke-width="2"><path d="M0 40h70l30 30v90"/><path d="M0 90h40l20 20v110"/><circle cx="100" cy="164" r="5"/><circle cx="60" cy="214" r="4"/></g></svg>
+
+  <h1 class="cover-title"><span class="o">上下文</span>怎么管？</h1>
+  <div class="cover-sub"><i class="l"></i>放什么、放哪、放多少<i class="r"></i></div>
+
+  <div class="hubwrap">
+    <svg class="spokes" width="912" height="620" viewBox="0 0 912 620">
+      <defs>
+        <marker id="in-arr" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="11" markerHeight="11" orient="auto">
+          <path d="M1 1 L11 6 L1 11 Z" fill="#ef6a1c"/>
+        </marker>
+      </defs>
+      <g fill="none" stroke="#ef6a1c" stroke-width="3" stroke-dasharray="9 7">
+        <path d="M220 108 C220 168 380 188 420 224" marker-end="url(#in-arr)"/>
+        <path d="M692 108 C692 168 532 188 492 224" marker-end="url(#in-arr)"/>
+        <path d="M268 298 C300 298 340 310 400 310" marker-end="url(#in-arr)"/>
+        <path d="M644 298 C612 298 572 310 512 310" marker-end="url(#in-arr)"/>
+        <path d="M220 488 C220 440 380 420 420 396" marker-end="url(#in-arr)"/>
+        <path d="M692 488 C692 440 532 420 492 396" marker-end="url(#in-arr)"/>
+      </g>
+    </svg>
+
+    <div class="spoke s1">
+      <div class="ic"><svg width="36" height="36"><use href="#i-count"/></svg></div>
+      <div><div class="nm">系统提示</div><div class="ds">角色和项目规矩</div></div>
+    </div>
+    <div class="spoke s2">
+      <div class="ic"><svg width="36" height="36"><use href="#i-do"/></svg></div>
+      <div><div class="nm">工具定义</div><div class="ds">能调哪些工具</div></div>
+    </div>
+    <div class="spoke s3">
+      <div class="ic"><svg width="36" height="36"><use href="#i-mem"/></svg></div>
+      <div><div class="nm">长期记忆</div><div class="ds">跨会话的事实</div></div>
+    </div>
+    <div class="spoke s4">
+      <div class="ic"><svg width="36" height="36"><use href="#i-search"/></svg></div>
+      <div><div class="nm">检索结果</div><div class="ds">资料和命令输出</div></div>
+    </div>
+    <div class="spoke s5">
+      <div class="ic"><svg width="36" height="36"><use href="#i-chat"/></svg></div>
+      <div><div class="nm">对话历史</div><div class="ds">这一轮说过的话</div></div>
+    </div>
+    <div class="spoke s6 now">
+      <div class="ic"><svg width="36" height="36"><use href="#i-edit"/></svg></div>
+      <div><div class="nm">本轮输入</div><div class="ds">这一次的指令</div></div>
+    </div>
+
+    <div class="hub"></div>
+    <div class="hub-in">
+      <div class="h1">上下文</div>
+      <div class="h2">这一轮能看到的全部</div>
+      <div class="stack"><i style="height:12px"></i><i style="height:18px"></i><i style="height:14px"></i><i style="height:36px"></i><i style="height:28px"></i><i style="height:22px;background:#ef6a1c"></i></div>
+    </div>
+  </div>
+  <div class="hub-cap"><span>虚线箭头 = 汇进这一轮</span><span>橙色这一块，每次都会变</span></div>
+
+  <div class="quote sm"><span class="qm">“</span><span>模型只知道这一轮<span class="o">塞给它的</span>东西。</span><span class="qm">”</span></div>
+  <div class="foot"><span>AI 原理图解 13</span><span class="pn"><em>01</em> / 07</span></div>
+</section>
+
+<!-- ================= P2 ================= -->
+<section class="page" id="p2">
+  <div class="kicker">先换个看法</div>
+  <h2 class="h h1">上下文：<span class="o">这一轮能看到的</span></h2>
+  <p class="intro">提示词工程管那一句怎么写。<br>上下文工程管这一轮能看见的全部。<br><b>没塞进来的，它看不见。</b></p>
+  <p class="para">台面上不只是打进去的那几句话。系统提示、工具说明、读过的文件、搜索结果、聊过的每一句，都占位置。<br>它有上限，看到了也不等于用上。</p>
+  <p class="para">常见的几种翻车，多半是这张台面没管好：</p>
+  <div class="colist">
+    <div class="row"><b>聊长了</b>：到第三十轮，开头定好的规矩开始被忘掉</div>
+    <div class="row"><b>塞太多</b>：把整个项目丢进去，回答反而变含糊</div>
+    <div class="row"><b>换会话</b>：昨天讲清楚的事，要从头再讲一遍</div>
+  </div>
+  <p class="para">没写进文件，昨天的判断下一轮就没了。<br><b>管好这张台面，比琢磨提示词更要紧。</b></p>
+  <div class="note">
+    <div class="ic"><svg width="38" height="38"><use href="#i-bulb"/></svg></div>
+    <div>管上下文，就是管放什么、放哪、放多少。</div>
+  </div>
+  <div class="foot"><span>AI 原理图解 13</span><span class="pn"><em>02</em> / 07</span></div>
+</section>
+
+<!-- ================= P3 ================= -->
+<section class="page" id="p3">
+  <div class="kicker">台面上有什么</div>
+  <h2 class="h h1">六个来源：<span class="o">不全当场写的</span></h2>
+  <p class="intro">模型看到的东西来自六个方向。<b>只有最后一块是当场写的。</b></p>
+  <div class="desk">
+    <div class="r">
+      <div class="ic"><svg width="32" height="32"><use href="#i-count"/></svg></div>
+      <div><div class="nm">系统提示</div><div class="ds">角色、规矩、约束文件</div></div>
+      <div class="tg">每轮都带</div>
+    </div>
+    <div class="r">
+      <div class="ic"><svg width="32" height="32"><use href="#i-do"/></svg></div>
+      <div><div class="nm">工具定义</div><div class="ds">能调哪些工具、要什么参数</div></div>
+      <div class="tg">每轮都带</div>
+    </div>
+    <div class="r">
+      <div class="ic"><svg width="32" height="32"><use href="#i-mem"/></svg></div>
+      <div><div class="nm">长期记忆</div><div class="ds">系统替它存下来，下次再塞回来</div></div>
+      <div class="tg">系统注入</div>
+    </div>
+    <div class="r">
+      <div class="ic"><svg width="32" height="32"><use href="#i-search"/></svg></div>
+      <div><div class="nm">检索结果</div><div class="ds">资料、打开过的文件、命令输出</div></div>
+      <div class="tg grow">最容易胀</div>
+    </div>
+    <div class="r">
+      <div class="ic"><svg width="32" height="32"><use href="#i-chat"/></svg></div>
+      <div><div class="nm">对话历史</div><div class="ds">这一轮说过的每一句，包括它的回复</div></div>
+      <div class="tg grow">越积越多</div>
+    </div>
+    <div class="r now">
+      <div class="ic"><svg width="32" height="32"><use href="#i-edit"/></svg></div>
+      <div><div class="nm">本轮输入</div><div class="ds">这一次的指令，通常放在最后</div></div>
+      <div class="tg">每次都变</div>
+    </div>
+  </div>
+  <div class="foot"><span>AI 原理图解 13</span><span class="pn"><em>03</em> / 07</span></div>
+</section>
+
+<!-- ================= P4 ================= -->
+<section class="page" id="p4">
+  <div class="kicker">放多少</div>
+  <h2 class="h h1">预算：<span class="o">多给不如给对</span></h2>
+  <p class="intro">把上下文当成有限的预算来分。<br>多给一份无关内容，关键内容分到的注意力就更少。<br><b>给得多，不等于给得好。</b></p>
+  <div class="budget" title="示意">
+    <span class="a">约束</span>
+    <span class="b">规格</span>
+    <span class="c">相关文件</span>
+    <span class="d">指令</span>
+    <span class="e">留白 三成</span>
+  </div>
+  <div class="bcap"><span>该给的，按这块分</span><span>比例为示意</span></div>
+  <div class="cmp">
+    <div class="bad">
+      <div class="tag">不该给</div>
+      <div class="line">整个仓库<em>让它自己翻，等于塞满噪音</em></div>
+      <div class="line">完整报错日志<em>几百行里有用的不到十行</em></div>
+      <div class="line">上一件事的历史<em>做完就换会话，别一路带着</em></div>
+      <div class="line">大段示例数据<em>占位置，帮不上这次的忙</em></div>
+    </div>
+    <div class="good">
+      <div class="tag">该给</div>
+      <div class="line">项目约束、模块规格<em>长期有效，放在最前面</em></div>
+      <div class="line">指名要改的两三个文件<em>加上它们依赖的接口</em></div>
+      <div class="line">关键那几行日志<em>够定位就停，不要整份贴</em></div>
+      <div class="line">这一次的指令<em>通常放在最后，注意力最高的位置</em></div>
+    </div>
+  </div>
+  <p class="para">大约留三成空白，给推理和输出用。填满了就没有余地。不确定这次用不用，<b>就先留在外面。</b></p>
+  <div class="foot"><span>AI 原理图解 13</span><span class="pn"><em>04</em> / 07</span></div>
+</section>
+
+<!-- ================= P5 ================= -->
+<section class="page" id="p5">
+  <div class="kicker">放哪</div>
+  <h2 class="h h1">位置：<span class="o">重要的放头尾</span></h2>
+  <p class="intro">上下文一长，准确率会慢慢往下掉，很难察觉。<b>头尾清楚，中间的约束经常不起作用。</b></p>
+  <div class="attn">
+    <div class="band hi">
+      <div><div class="nm">开头</div><div class="ds">系统提示、项目规矩</div></div>
+      <div class="tg">注意力高</div>
+    </div>
+    <div class="band lo">
+      <div><div class="nm">中间</div><div class="ds">检索结果、对话中段、长文件</div></div>
+      <div class="tg">经常被忽略</div>
+    </div>
+    <div class="band hi">
+      <div><div class="nm">结尾</div><div class="ds">这一次的指令</div></div>
+      <div class="tg">注意力高</div>
+    </div>
+  </div>
+  <p class="para">窗口能装一百万 Token，不代表这一百万都被用上。<br>塞满噪音之后，指令遵循和推理都会明显下降。</p>
+  <p class="para">无关的文件、用不上的日志，都会挤占注意力，<b>又贵又慢。</b></p>
+  <div class="foot"><span>AI 原理图解 13</span><span class="pn"><em>05</em> / 07</span></div>
+</section>
+
+<!-- ================= P6 ================= -->
+<section class="page" id="p6">
+  <div class="kicker">聊长了</div>
+  <h2 class="h h1">压缩：<span class="o">最早的规矩最先丢</span></h2>
+  <p class="intro">对话会一直变长，窗口却是有限的。装不下的时候，要决定扔掉什么。<b>压缩最常丢掉的，正是早期定下的约束。</b></p>
+  <div class="sheet" style="margin-top:32px;padding:32px 36px">
+    <div class="win">
+      <div class="ctx">
+        <div class="r fade"><em>早</em>任务和约束</div>
+        <div class="r fade"><em>中</em>过程被挤掉</div>
+        <div class="r"><em>摘</em>改了几个文件</div>
+        <div class="r" style="background:#ef6a1c;color:#fff"><em style="color:#fff">近</em>最近几轮</div>
+        <div class="cap">直接截断之后（示意）</div>
+      </div>
+      <div class="say">开头定下的约束，说完就过去了。<br><br>截断会把最早几轮整段砍掉。<br>摘要也留不住具体数字。<br><br><b>最先丢掉的，往往是开头的规矩。</b></div>
+    </div>
+  </div>
+  <p class="para">常见三种做法：</p>
+  <div class="colist">
+    <div class="row"><b>直接截断</b>：丢掉最早的几轮，任务描述经常一起没</div>
+    <div class="row"><b>摘要替换</b>：前面压成一小段，具体数字容易丢</div>
+    <div class="row"><b>分层保留</b>：硬约束原文不动，过程做摘要，最近几轮留着</div>
+  </div>
+  <p class="para">硬约束要单独存，不进压缩流程。跨会话该记住的，写成文件。</p>
+  <div class="foot"><span>AI 原理图解 13</span><span class="pn"><em>06</em> / 07</span></div>
+</section>
+
+<!-- ================= P7 ================= -->
+<section class="page" id="p7">
+  <div class="kicker">放在一起看</div>
+  <h2 class="h h1">规矩：<span class="o">反复讲的就写下来</span></h2>
+  <p class="intro">四个动作里，写出去最有杠杆。把定好的东西写进文件，等于加了一份不会随对话变长而模糊的记忆。</p>
+  <div class="sheet steps" style="margin-top:28px;gap:20px">
+    <div class="step key"><div class="no">01</div><div><div class="tt">写出去<span class="tag">最有杠杆</span></div><div class="tx">规格、约束、进度写成文件。反复要讲的，我会写进 CLAUDE.md；某一类任务做成 Skill。</div></div></div>
+    <div class="step"><div class="no">02</div><div><div class="tt">挑着给</div><div class="tx">只给这一步真正需要的，指名要改哪个文件。</div></div></div>
+    <div class="step"><div class="no">03</div><div><div class="tt">压缩</div><div class="tx">长内容先摘要再进上下文，硬约束单独留着。</div></div></div>
+    <div class="step"><div class="no">04</div><div><div class="tt">隔离</div><div class="tx">一个任务一个会话，别让上一件事的噪音污染下一件。</div></div></div>
+  </div>
+  <p class="para">约束文件要一直保持薄。写得越长，每一条就越没人当真。</p>
+  <p class="src">资料基准 2026 年 9 月 · 参考《上下文是怎么回事》《上下文预算》《对话压缩》《长期记忆的实现方式》《约束沉淀》<br>下一篇：MCP</p>
+  <div class="foot"><span>AI 原理图解 13</span><span class="pn"><em>07</em> / 07</span></div>
+</section>
+
+
+<script>
+  // ?only=N 只显示第 N 页（导出用）；?check=1 输出版面自检报告到 body[data-report]
+  const q = new URLSearchParams(location.search);
+  const n = q.get('only');
+  if (n) { document.body.classList.add('only'); document.getElementById('p' + n).classList.add('show'); }
+  if (q.get('check')) {
+    const rep = [];
+    document.querySelectorAll('.page').forEach((pg, i) => {
+      const pr = pg.getBoundingClientRect();
+      const foot = pg.querySelector('.foot');
+      const ft = foot ? foot.getBoundingClientRect().top : pr.bottom;
+      let maxB = pr.top, right = [], clipped = [];
+      pg.querySelectorAll('*').forEach(el => {
+        if (foot && (el === foot || foot.contains(el))) return;
+        if (el.closest('.circuit')) return;
+        if (el.ownerSVGElement) return;
+        const r = el.getBoundingClientRect();
+        if (!r.width || !r.height) return;
+        if (r.bottom > maxB) maxB = r.bottom;
+        if (r.right > pr.right - 40 && !el.closest('.money')) right.push((el.className && el.className.baseVal === undefined ? el.className : el.tagName) + '');
+        const cs = getComputedStyle(el);
+        if (el.children.length === 0 && el.textContent.trim().length > 1 && !el.closest('.qm') && el.scrollHeight > el.clientHeight + 4 && cs.overflow === 'visible' && el.clientHeight > 0 && cs.height !== 'auto') clipped.push(el.textContent.trim().slice(0, 20));
+      });
+      const h1 = pg.querySelector('.h.h1, .cover-title'); const wrapped = h1 ? h1.getBoundingClientRect().height > parseFloat(getComputedStyle(h1).fontSize) * 1.6 : false;
+      rep.push({ page: i + 1, titleWrapped: wrapped, gapToFooter: Math.round(ft - maxB), pageBottomOverflow: Math.round(maxB - pr.bottom), rightEdge: right.slice(0, 5), textOverflow: clipped.slice(0, 5) });
+    });
+    document.body.setAttribute('data-report', JSON.stringify(rep));
+  }
+</script>
+</body>
+</html>

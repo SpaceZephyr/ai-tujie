@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>AI 行业划分 · 3:4 图组</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --or: #ef6a1c;
+  --or-soft: #fff1e7;
+  --or-line: #f6b58c;
+  --ink: #17161a;
+  --ink-2: #3b3a40;
+  --ink-3: #75737c;
+  --line: #e7e5e2;
+  --bg: #f6f5f2;
+  --card: #ffffff;
+  --shadow: 0 10px 30px rgba(40, 30, 20, .07), 0 2px 6px rgba(40, 30, 20, .04);
+  --sans: "PingFang SC", -apple-system, "Hiragino Sans GB", sans-serif;
+}
+body { text-wrap: pretty; background: #d9d7d3; font-family: var(--sans); color: var(--ink); padding: 40px 0; }
+body.only { padding: 0; background: var(--bg); }
+.page {
+  width: 1080px; height: 1440px; margin: 0 auto 40px; position: relative; overflow: hidden;
+  background: var(--bg); padding: 84px 84px 0;
+}
+body.only .page { margin: 0; }
+body.only .page:not(.show) { display: none; }
+
+/* 背景：角落点阵 + 电路线 */
+.page::before, .page::after { content: ""; position: absolute; pointer-events: none; }
+.page::before {
+  top: 0; right: 0; width: 360px; height: 300px;
+  background-image: radial-gradient(#d9d6d0 1.6px, transparent 1.7px);
+  background-size: 18px 18px;
+  -webkit-mask-image: radial-gradient(ellipse at top right, #000 10%, transparent 70%);
+}
+.page::after {
+  bottom: 0; left: 0; width: 320px; height: 260px;
+  background-image: radial-gradient(#dcd9d3 1.6px, transparent 1.7px);
+  background-size: 18px 18px;
+  -webkit-mask-image: radial-gradient(ellipse at bottom left, #000 10%, transparent 70%);
+}
+.circuit { position: absolute; pointer-events: none; opacity: .55; }
+
+/* 页脚 */
+.foot {
+  position: absolute; left: 84px; right: 84px; bottom: 56px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 22px; color: var(--ink-3); letter-spacing: .5px;
+}
+.foot b { color: var(--ink-2); font-weight: 600; }
+.foot .pn { font-variant-numeric: tabular-nums; }
+.foot .pn em { font-style: normal; color: var(--or); font-weight: 700; }
+
+/* ============ 封面 ============ */
+.cover-title { text-align: center; white-space: nowrap; font-size: 100px; font-weight: 600; line-height: 1.1; letter-spacing: 0; -webkit-text-stroke: 2.4px currentColor; }
+.cover-title .o { color: var(--or); }
+.cover-sub {
+  display: flex; align-items: center; justify-content: center; gap: 22px;
+  margin-top: 22px; font-size: 34px; color: var(--ink-2); letter-spacing: 4px; font-weight: 500;
+}
+.cover-sub i { display: block; width: 90px; height: 2px; background: var(--or); position: relative; }
+.cover-sub i::after { content: ""; position: absolute; top: -5px; width: 12px; height: 12px; border-radius: 50%; background: var(--or); }
+.cover-sub i.l::after { right: 0; }
+.cover-sub i.r::after { left: 0; }
+
+.task {
+  width: 520px; height: 96px; margin: 40px auto 0; background: var(--card); border-radius: 26px;
+  box-shadow: var(--shadow); display: flex; align-items: center; gap: 22px; padding: 0 34px;
+}
+.task .t1 { font-size: 34px; font-weight: 800; }
+.task .t2 { font-size: 24px; color: var(--ink-3); margin-top: 2px; }
+.task .t2 b { color: var(--or); font-weight: 600; }
+.down { width: 2px; height: 46px; margin: 0 auto; position: relative;
+  background: repeating-linear-gradient(to bottom, var(--or) 0 7px, transparent 7px 13px); }
+.down::after { content: ""; position: absolute; left: -11px; bottom: -6px;
+  border: 12px solid transparent; border-top: 16px solid var(--or); border-bottom: 0; }
+
+.loop { position: relative; width: 912px; height: 700px; margin: 6px auto 0; }
+.loop svg.ring { position: absolute; inset: 0; overflow: visible; }
+.node {
+  position: absolute; width: 250px; height: 120px; background: var(--card); border-radius: 60px;
+  box-shadow: var(--shadow); display: flex; align-items: center; gap: 16px; padding: 0 22px 0 18px;
+}
+.node .ic { width: 80px; height: 80px; border-radius: 50%; background: var(--or-soft); display: grid; place-items: center; flex: none; }
+.node .nm { font-size: 36px; font-weight: 800; line-height: 1.1; }
+.node .nm span { font-size: 20px; color: var(--or); font-weight: 700; margin-right: 6px; vertical-align: 4px; }
+.node .ds { font-size: 20px; color: var(--ink-3); line-height: 1.35; margin-top: 4px; }
+.n1 { left: 331px; top: 10px; }
+.n2 { left: 661px; top: 220px; }
+.n3 { left: 331px; top: 430px; }
+.n4 { left: 1px; top: 220px; }
+
+.hub {
+  position: absolute; left: 306px; top: 180px; width: 300px; height: 200px;
+  clip-path: polygon(14% 0, 86% 0, 100% 20%, 100% 80%, 86% 100%, 14% 100%, 0 80%, 0 20%);
+  background: var(--or); display: grid; place-items: center;
+}
+.hub-in {
+  position: absolute; left: 309px; top: 183px; width: 294px; height: 194px;
+  clip-path: polygon(14% 0, 86% 0, 100% 20%, 100% 80%, 86% 100%, 14% 100%, 0 80%, 0 20%);
+  background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.hub-in .h1 { font-size: 46px; font-weight: 600; -webkit-text-stroke: 1px currentColor; color: var(--or); letter-spacing: 2px; }
+.hub-in .h2 { font-size: 22px; color: var(--ink-2); margin-top: 4px; font-weight: 500; }
+.hub-in .stack { display: flex; gap: 6px; margin-top: 14px; align-items: flex-end; }
+.hub-in .stack i { display: block; width: 18px; background: var(--or-line); border-radius: 3px; }
+
+.lbl { position: absolute; font-size: 21px; color: var(--ink-3); font-weight: 500; background: var(--bg); padding: 2px 8px; }
+.lbl b { color: var(--or); font-weight: 700; }
+
+.answer {
+  position: absolute; left: 216px; top: 604px; width: 480px; height: 96px; background: var(--card);
+  border-radius: 26px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 22px; padding: 0 34px;
+}
+.answer .t1 { font-size: 34px; font-weight: 800; }
+.answer .t2 { font-size: 24px; color: var(--ink-3); margin-top: 2px; }
+.answer .t2 b { color: var(--or); font-weight: 600; }
+
+.quote {
+  margin: 34px 0 0; height: 116px; background: var(--card); border-radius: 30px; box-shadow: var(--shadow);
+  display: flex; align-items: center; justify-content: center; gap: 26px; font-size: 36px; font-weight: 700;
+}
+.quote .qm { font-size: 92px; color: var(--or); font-weight: 900; line-height: 1; height: 58px; font-family: Georgia, serif; }
+.quote .o { color: var(--or); }
+
+/* ============ 文字页 ============ */
+.kicker { display: flex; align-items: center; gap: 14px; font-size: 24px; color: var(--or); font-weight: 700; letter-spacing: 2px; }
+.kicker::before { content: ""; width: 34px; height: 3px; background: var(--or); }
+.h { font-size: 76px; font-weight: 600; line-height: 1.25; margin-top: 22px; letter-spacing: 1px; -webkit-text-stroke: 1.6px currentColor; }
+.h .o { color: var(--or); }
+.lead { font-size: 32px; line-height: 1.75; color: var(--ink-2); margin-top: 26px; }
+.lead b { color: var(--ink); font-weight: 700; }
+.lead .o, .body .o { color: var(--or); font-weight: 700; }
+
+.sheet { background: var(--card); border-radius: 32px; box-shadow: var(--shadow); padding: 44px 48px; margin-top: 40px; }
+
+.steps { display: grid; gap: 34px; }
+.step { display: grid; grid-template-columns: 96px 1fr; column-gap: 10px; }
+.step .no { font-size: 52px; font-weight: 600; -webkit-text-stroke: 1px currentColor; color: var(--or); line-height: 1; font-variant-numeric: tabular-nums; }
+.step .tt { font-size: 38px; font-weight: 800; line-height: 1.2; }
+.step .tx { font-size: 29px; line-height: 1.7; color: var(--ink-2); margin-top: 8px; }
+.step .tx b { color: var(--ink); }
+.step.key { background: var(--or-soft); border-radius: 22px; margin: -18px -24px; padding: 18px 24px; }
+.step .tag { font-size: 22px; font-weight: 600; color: #fff; background: var(--or); border-radius: 8px; padding: 3px 12px; margin-left: 16px; vertical-align: 6px; }
+
+.note { margin-top: 36px; display: flex; gap: 22px; align-items: flex-start; font-size: 30px; line-height: 1.72; color: var(--ink-2); }
+.note .ic { flex: none; width: 64px; height: 64px; border-radius: 50%; background: var(--or); display: grid; place-items: center; margin-top: 4px; }
+.note b { color: var(--ink); }
+
+/* 现象页 */
+.sym { display: grid; gap: 24px; margin-top: 36px; }
+.sym-row { background: var(--card); border-radius: 30px; box-shadow: var(--shadow); padding: 32px 44px 32px 40px; display: grid; grid-template-columns: 84px 1fr; column-gap: 14px; }
+.sym-row .ic { width: 72px; height: 72px; border-radius: 50%; background: var(--or-soft); display: grid; place-items: center; }
+.sym-row .s1 { font-size: 36px; font-weight: 800; line-height: 1.35; }
+.sym-row .s2 { font-size: 28px; color: var(--ink-3); line-height: 1.65; margin-top: 10px; }
+.sym-row .s2 b { color: var(--or); font-weight: 700; }
+.sym-row .go { font-size: 22px; color: var(--ink-3); margin-top: 14px; letter-spacing: 1px; }
+
+/* 记忆页 */
+.win { display: grid; grid-template-columns: 330px 1fr; gap: 40px; align-items: center; }
+.ctx { background: #fbfaf8; border: 2px solid var(--line); border-radius: 22px; padding: 18px; display: grid; gap: 10px; }
+.ctx .r { height: 46px; border-radius: 10px; background: var(--or-soft); color: var(--ink-2); font-size: 20px; display: flex; align-items: center; padding: 0 16px; gap: 10px; }
+.ctx .r em { font-style: normal; color: var(--or); font-weight: 700; font-size: 18px; }
+.ctx .r.fade { background: repeating-linear-gradient(135deg, #f1efec 0 8px, #fbfaf8 8px 16px); color: #aaa7a0; border: 1.5px dashed #d6d2cc; }
+.ctx .cap { font-size: 19px; color: var(--ink-3); text-align: center; margin-top: 4px; }
+.win .say { font-size: 30px; line-height: 1.75; color: var(--ink-2); }
+.win .say b { color: var(--ink); }
+.two { display: grid; gap: 30px; margin-top: 40px; }
+.two .it { display: grid; grid-template-columns: 70px 1fr; }
+.two .it .k { width: 52px; height: 52px; border-radius: 14px; background: var(--or); color: #fff; font-size: 28px; font-weight: 800; display: grid; place-items: center; margin-top: 4px; }
+.two .it .tt { font-size: 34px; font-weight: 800; line-height: 1.4; }
+.two .it .tx { font-size: 28px; line-height: 1.7; color: var(--ink-2); margin-top: 8px; }
+
+/* 停止页 */
+.brakes { display: grid; gap: 26px; }
+.brake { display: grid; grid-template-columns: 76px 1fr; column-gap: 16px; }
+.brake .ic { width: 68px; height: 68px; border-radius: 50%; background: var(--or-soft); display: grid; place-items: center; }
+.brake .tt { font-size: 36px; font-weight: 800; line-height: 1.3; }
+.brake .tt small { font-size: 24px; font-weight: 600; color: var(--or); margin-left: 12px; }
+.brake .tx { font-size: 28px; line-height: 1.68; color: var(--ink-2); margin-top: 6px; }
+.retry { margin-top: 40px; }
+.retry .tt { font-size: 34px; font-weight: 800; }
+.retry .tt .o { color: var(--or); }
+.cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 20px; }
+.cmp > div { border-radius: 24px; padding: 26px 30px; font-size: 26px; line-height: 1.6; }
+.cmp .bad { background: #efedea; color: var(--ink-3); }
+.cmp .good { background: var(--card); box-shadow: var(--shadow); color: var(--ink-2); }
+.cmp .tag { font-size: 22px; font-weight: 700; letter-spacing: 1px; margin-bottom: 8px; }
+.cmp .bad .tag { color: #9a968f; }
+.cmp .good .tag { color: var(--or); }
+.cmp code { font-family: "SF Mono", Menlo, monospace; font-size: 22px; background: var(--or-soft); color: var(--or); padding: 1px 8px; border-radius: 6px; }
+.cmp .bad code { background: #e2dfda; color: #8b877f; }
+
+/* 成本页 */
+.bars { display: flex; align-items: flex-end; gap: 12px; height: 170px; margin-top: 10px; padding: 0 4px; }
+.bars .b { flex: 1; background: var(--or-line); border-radius: 6px 6px 0 0; position: relative; }
+.bars .b .hist { position: absolute; left: 0; right: 0; bottom: 0; background: #f9d9c3; border-radius: 6px 6px 0 0; }
+.bars .b .new { position: absolute; left: 0; right: 0; background: var(--or); border-radius: 6px 6px 0 0; }
+.axis { display: flex; justify-content: space-between; font-size: 20px; color: var(--ink-3); margin-top: 12px; padding: 0 4px; }
+.legend { display: flex; gap: 28px; font-size: 21px; color: var(--ink-3); margin-top: 16px; }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.legend i { width: 18px; height: 18px; border-radius: 4px; display: inline-block; }
+.calc { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-top: 22px; }
+.calc .big { font-size: 60px; font-weight: 600; -webkit-text-stroke: 1px currentColor; color: var(--or); font-variant-numeric: tabular-nums; letter-spacing: -1px; }
+.calc .eq { font-size: 30px; color: var(--ink-2); }
+.save { margin-top: 30px; }
+.save .tt { font-size: 34px; font-weight: 800; }
+.save ol { list-style: none; margin-top: 12px; display: grid; gap: 4px; }
+.save li { font-size: 29px; line-height: 1.6; color: var(--ink-2); display: grid; grid-template-columns: 46px 1fr; }
+.save li span { color: var(--or); font-weight: 800; }
+
+/* 收尾页 */
+.formula { display: flex; align-items: center; justify-content: center; gap: 18px; margin-top: 64px; flex-wrap: wrap; }
+.formula .p { background: var(--card); box-shadow: var(--shadow); border-radius: 26px; padding: 26px 30px; text-align: center; min-width: 190px; }
+.formula .p .a { font-size: 40px; font-weight: 900; }
+.formula .p .b { font-size: 21px; color: var(--ink-3); margin-top: 4px; }
+.formula .op { font-size: 48px; font-weight: 900; color: var(--or); }
+.formula .res { background: var(--or); color: #fff; border-radius: 26px; padding: 26px 30px; text-align: center; margin-top: 18px; width: 100%; }
+.formula .res .a { font-size: 40px; font-weight: 900; }
+.formula .res .b { font-size: 22px; opacity: .9; margin-top: 4px; }
+.pair { margin-top: 64px; display: grid; gap: 26px; font-size: 34px; line-height: 1.7; color: var(--ink-2); }
+.pair b { color: var(--ink); }
+.next { margin-top: 72px; }
+.next .tt { font-size: 24px; color: var(--ink-3); letter-spacing: 3px; font-weight: 700; }
+.next ul { list-style: none; margin-top: 18px; display: grid; gap: 16px; }
+.next li { display: flex; align-items: baseline; gap: 18px; font-size: 29px; color: var(--ink-2); }
+.next li b { color: var(--ink); font-weight: 800; flex: none; }
+.next li b::after { content: " →"; color: var(--or); }
+
+/* ============ 行业划分 · 封面 ============ */
+.user-pill { width: 470px; height: 84px; margin: 34px 0 0 calc((912px - 82px - 470px) / 2); background: var(--card); border-radius: 42px; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center; gap: 16px; font-size: 30px; font-weight: 600; }
+.user-pill small { font-size: 22px; color: var(--ink-3); font-weight: 400; }
+.user-pill small b { color: var(--or); font-weight: 600; }
+.down.l { margin: 0 0 0 calc((912px - 82px) / 2); }
+.stackwrap { display: flex; gap: 18px; margin-top: 8px; }
+.stack { flex: 1; display: grid; gap: 14px; }
+.layer { height: 116px; background: var(--card); border-radius: 26px; box-shadow: var(--shadow); display: grid; grid-template-columns: 72px 1fr 210px; align-items: center; column-gap: 18px; padding: 0 26px 0 20px; }
+.layer .ic { width: 72px; height: 72px; border-radius: 50%; background: var(--or-soft); display: grid; place-items: center; }
+.layer .nm { font-size: 34px; font-weight: 600; line-height: 1.15; display: flex; align-items: center; gap: 12px; }
+.layer .nm .tg { font-size: 19px; font-weight: 600; color: var(--or); background: var(--or-soft); border-radius: 7px; padding: 2px 10px; }
+.layer .ds { font-size: 21px; color: var(--ink-3); margin-top: 6px; }
+.layer .dots { display: flex; flex-wrap: wrap; gap: 7px; justify-content: flex-end; align-content: center; }
+.layer .dots i { width: 13px; height: 13px; border-radius: 50%; background: var(--or-line); display: block; }
+.layer .dots i.b { width: 30px; height: 30px; background: var(--or); }
+.layer.base { background: var(--ink); }
+.layer.base .nm { color: #fff; }
+.layer.base .ds { color: #b9b6bf; }
+.layer.base .ic { background: #2c2a31; }
+.layer.base .nm .tg { background: var(--or); color: #fff; }
+.money { width: 64px; position: relative; display: flex; justify-content: center; }
+.money::before { content: ""; position: absolute; top: 6px; bottom: 22px; left: 31px; width: 3px; background: repeating-linear-gradient(to bottom, var(--or) 0 9px, transparent 9px 16px); }
+.money::after { content: ""; position: absolute; bottom: 4px; left: 20px; border: 13px solid transparent; border-top: 18px solid var(--or); border-bottom: 0; }
+.money span { position: relative; writing-mode: vertical-rl; background: var(--bg); color: var(--or); font-size: 26px; font-weight: 600; letter-spacing: 8px; padding: 14px 0; margin-top: 200px; height: fit-content; }
+.stack-cap { display: flex; justify-content: space-between; font-size: 20px; color: var(--ink-3); margin: 14px 82px 0 6px; }
+.stack-cap i { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--or-line); margin-right: 8px; vertical-align: 1px; }
+
+/* 五层表 */
+.ltable { display: grid; }
+.lrow { display: grid; grid-template-columns: 168px 1fr; column-gap: 18px; padding: 30px 0; border-top: 1.5px solid var(--rule, #efedea); }
+.lrow:first-child { border-top: 0; padding-top: 0; }
+.lrow:last-child { padding-bottom: 0; }
+.lrow .ln { font-size: 34px; font-weight: 600; line-height: 1.3; }
+.lrow .ln small { display: block; font-size: 20px; color: var(--or); font-weight: 600; margin-bottom: 2px; letter-spacing: 1px; }
+.lrow .lt { font-size: 27px; line-height: 1.62; color: var(--ink-2); }
+.lrow .lt b { color: var(--ink); font-weight: 600; }
+.lrow .lt em { font-style: normal; color: var(--ink-3); font-size: 24px; display: block; margin-top: 2px; }
+
+/* 钱往下流 */
+.flow { display: flex; flex-direction: column; align-items: center; }
+.fnode { width: 520px; height: 96px; border-radius: 26px; background: var(--card); box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center; gap: 16px; font-size: 32px; font-weight: 600; }
+.fnode small { font-size: 22px; color: var(--ink-3); font-weight: 400; }
+.fnode.top { background: var(--or); color: #fff; }
+.fnode.top small { color: #ffe3d2; }
+.fnode.bot { background: var(--ink); color: #fff; }
+.fnode.bot small { color: #b9b6bf; }
+.farrow { height: 74px; width: 520px; position: relative; }
+.farrow::before { content: ""; position: absolute; left: 259px; top: 6px; bottom: 16px; width: 3px; background: var(--or); }
+.farrow::after { content: ""; position: absolute; left: 249px; bottom: 4px; border: 11px solid transparent; border-top: 15px solid var(--or); border-bottom: 0; }
+.farrow span { position: absolute; left: 290px; top: 50%; transform: translateY(-50%); font-size: 24px; color: var(--or); font-weight: 600; white-space: nowrap; }
+.farrow span em { font-style: normal; color: var(--ink-3); font-weight: 400; margin-left: 10px; font-size: 22px; }
+.side-note { margin-top: 26px; font-size: 24px; color: var(--ink-3); text-align: center; }
+
+/* 推论 */
+.infer { display: grid; gap: 30px; }
+.infer .it { display: grid; grid-template-columns: 70px 1fr; }
+.infer .it .k { width: 52px; height: 52px; border-radius: 14px; background: var(--or); color: #fff; font-size: 28px; font-weight: 600; display: grid; place-items: center; margin-top: 4px; }
+.infer .it .tt { font-size: 35px; font-weight: 600; line-height: 1.38; }
+.infer .it .tx { font-size: 28px; line-height: 1.68; color: var(--ink-2); margin-top: 8px; }
+.infer .it.key { background: var(--or-soft); border-radius: 24px; margin: -22px -26px; padding: 22px 26px; }
+.moat { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+.moat span { font-size: 24px; background: var(--card); box-shadow: var(--shadow); border-radius: 12px; padding: 8px 16px; color: var(--ink-2); }
+
+/* 对号入座表 */
+.seat { width: 100%; border-collapse: collapse; }
+.seat th { text-align: left; font-size: 21px; color: var(--ink-3); font-weight: 600; padding: 0 0 14px; letter-spacing: 1px; }
+.seat td { vertical-align: top; padding: 18px 0; border-top: 1.5px solid #efedea; font-size: 24px; line-height: 1.55; color: var(--ink-2); }
+.seat td:first-child { font-size: 29px; font-weight: 600; color: var(--ink); width: 150px; }
+.seat td:nth-child(2) { padding-right: 26px; width: 340px; }
+.seat tr.me td:first-child { color: var(--or); }
+.forms { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 32px; }
+.forms > div:first-child { grid-column: 1 / -1; }
+.forms .ft { font-size: 24px; color: var(--ink-3); font-weight: 600; letter-spacing: 2px; }
+.forms .fc { background: var(--card); box-shadow: var(--shadow); border-radius: 24px; padding: 22px 28px; }
+.forms .fc b { display: block; font-size: 32px; font-weight: 600; color: var(--ink); }
+.forms .fc span { display: block; font-size: 25px; color: var(--ink-3); margin-top: 8px; line-height: 1.5; }
+.remind { margin-top: 34px; font-size: 28px; line-height: 1.7; color: var(--ink-2); }
+.remind b { color: var(--ink); }
+.src { margin-top: 22px; font-size: 20px; color: var(--ink-3); line-height: 1.6; }
+
+/* ============ 文字叙述页（优先用这一套） ============ */
+.intro { font-size: 30px; line-height: 1.75; color: var(--ink-2); margin-top: 24px; }
+.intro b { color: var(--ink); font-weight: 600; }
+.sec { margin-top: 32px; }
+.sec .lb { display: flex; align-items: center; gap: 10px; font-size: 23px; color: var(--or); font-weight: 600; letter-spacing: 2px; margin-bottom: 8px; }
+.sec .lb::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--or); }
+.sec p { font-size: 28px; line-height: 1.7; color: var(--ink-2); }
+.sec p b { color: var(--ink); font-weight: 600; }
+.colist { background: var(--card); border-radius: 24px; box-shadow: var(--shadow); padding: 30px 36px; display: grid; gap: 14px; }
+.colist .row { font-size: 28px; line-height: 1.6; color: var(--ink-2); }
+.colist .row b { color: var(--ink); font-weight: 600; }
+.h.h1 { font-size: 72px; line-height: 1.2; margin-top: 18px; }
+.para { font-size: 30px; line-height: 1.8; color: var(--ink-2); margin-top: 34px; }
+.para b { color: var(--ink); font-weight: 600; }
+.para + .colist { margin-top: 18px; }
+.h1 + .intro { margin-top: 36px; font-size: 32px; line-height: 1.8; }
+.colist + .para { margin-top: 36px; }
+</style>
+</head>
+<body>
+
+<!-- 可复用图标 -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <marker id="ah" viewBox="0 0 12 12" refX="7" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+      <path d="M1 1 L11 6 L1 11 Z" fill="#ef6a1c"/>
+    </marker>
+    <symbol id="i-think" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 7a12 12 0 0 0-7 21.7c1.4 1 2.2 2.4 2.2 4V35h9.6v-2.3c0-1.6.8-3 2.2-4A12 12 0 0 0 24 7z"/><path d="M19.5 40h9M21 44h6"/><path d="M24 15v7l4 3"/></g></symbol>
+    <symbol id="i-do" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M29 8a9 9 0 0 0-8.6 11.7L8 32.1a3.5 3.5 0 0 0 5 5l12.4-12.4A9 9 0 0 0 37 16.5l-5.5 5.5-5-1-1-5L31 10.4A9 9 0 0 0 29 8z"/></g></symbol>
+    <symbol id="i-see" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 24s7.3-13 20-13 20 13 20 13-7.3 13-20 13S4 24 4 24z"/><circle cx="24" cy="24" r="6"/></g></symbol>
+    <symbol id="i-again" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M38 20A15 15 0 0 0 10.6 15M10 28a15 15 0 0 0 27.4 5"/><path d="M10 7v8h8M38 41v-8h-8"/></g></symbol>
+    <symbol id="i-chat" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10h32a3 3 0 0 1 3 3v18a3 3 0 0 1-3 3H22l-9 7v-7H8a3 3 0 0 1-3-3V13a3 3 0 0 1 3-3z"/><path d="M15 20h18M15 26h11"/></g></symbol>
+    <symbol id="i-flag" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="18"/><path d="M16 24.5l5.5 5.5L33 18.5"/></g></symbol>
+    <symbol id="i-stop" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="18"/><path d="M16 24.5l5.5 5.5L33 18.5"/></g></symbol>
+    <symbol id="i-count" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="34" height="34" rx="6"/><path d="M15 17h18M15 24h18M15 31h10"/></g></symbol>
+    <symbol id="i-clock" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="17"/><path d="M24 14v10l7 5"/></g></symbol>
+    <symbol id="i-pause" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="17"/><path d="M20 17v14M28 17v14"/></g></symbol>
+    <symbol id="i-bill" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 6h26v36l-4.3-3-4.4 3-4.3-3-4.3 3-4.4-3-4.3 3z"/><path d="M17 16h14M17 23h14M17 30h8"/></g></symbol>
+    <symbol id="i-bulb" viewBox="0 0 48 48"><g fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M24 8a11 11 0 0 0-6.4 20c1.3.9 2 2.3 2 3.8V34h8.8v-2.2c0-1.5.7-2.9 2-3.8A11 11 0 0 0 24 8z"/><path d="M20 39h8"/></g></symbol>
+    <symbol id="i-chip" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="12" y="12" width="24" height="24" rx="4"/><rect x="19" y="19" width="10" height="10" rx="1.5"/><path d="M18 6v6M24 6v6M30 6v6M18 36v6M24 36v6M30 36v6M6 18h6M6 24h6M6 30h6M36 18h6M36 24h6M36 30h6"/></g></symbol>
+    <symbol id="i-model" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 5l16 9v20l-16 9-16-9V14z"/><path d="M8 14l16 9 16-9M24 23v20"/></g></symbol>
+    <symbol id="i-infra" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 6L42 15 24 24 6 15z"/><path d="M6 24l18 9 18-9M6 33l18 9 18-9"/></g></symbol>
+    <symbol id="i-agent" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="15" width="30" height="24" rx="7"/><circle cx="18.5" cy="27" r="3"/><circle cx="29.5" cy="27" r="3"/><path d="M24 15V9"/><circle cx="24" cy="7" r="2.5"/><path d="M5 25v6M43 25v6"/></g></symbol>
+    <symbol id="i-app" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="14" height="14" rx="3.5"/><rect x="27" y="7" width="14" height="14" rx="3.5"/><rect x="7" y="27" width="14" height="14" rx="3.5"/><rect x="27" y="27" width="14" height="14" rx="3.5"/></g></symbol>
+    <symbol id="i-user" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="16" r="8"/><path d="M8 42c1.5-9 8-14 16-14s14.5 5 16 14"/></g></symbol>
+    <symbol id="i-warn" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 7L43 40H5z"/><path d="M24 19v10M24 34v.5"/></g></symbol>
+    <symbol id="i-down" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 30l10-10 8 8 14-14"/><path d="M40 14v9M40 14h-9" transform="rotate(90 40 14) translate(0 0)"/></g></symbol>
+  </defs>
+</svg>
+
+<!-- ================= P1 封面 ================= -->
+<section class="page" id="p1">
+  <svg class="circuit" style="left:0;top:150px" width="160" height="220" viewBox="0 0 160 220"><g fill="none" stroke="#d2cec7" stroke-width="2"><path d="M0 40h70l30 30v90"/><path d="M0 90h40l20 20v110"/><circle cx="100" cy="164" r="5"/><circle cx="60" cy="214" r="4"/></g></svg>
+
+  <h1 class="cover-title"><span class="o">AI</span> 行业分几层？</h1>
+  <div class="cover-sub"><i class="l"></i>从芯片到应用，一共五层<i class="r"></i></div>
+
+  <div class="user-pill"><svg width="44" height="44"><use href="#i-user"/></svg>用户<small>钱从<b>这里</b>进来</small></div>
+  <div class="down l"></div>
+
+  <div class="stackwrap">
+    <div class="stack">
+      <div class="layer"><div class="ic"><svg width="40" height="40"><use href="#i-app"/></svg></div><div><div class="nm">应用<span class="tg">离钱最近</span></div><div class="ds">卖某个场景的结果</div></div><div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+      <div class="layer"><div class="ic"><svg width="40" height="40"><use href="#i-agent"/></svg></div><div><div class="nm">Agent</div><div class="ds">卖“把一段活干完”</div></div><div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+      <div class="layer"><div class="ic"><svg width="40" height="40"><use href="#i-infra"/></svg></div><div><div class="nm">基础设施</div><div class="ds">卖接入和工程能力</div></div><div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+      <div class="layer"><div class="ic"><svg width="40" height="40"><use href="#i-model"/></svg></div><div><div class="nm">模型厂商<span class="tg">价格战最凶</span></div><div class="ds">卖能力本身，按 Token 收</div></div><div class="dots"><i class="b" style="width:22px;height:22px"></i><i class="b" style="width:22px;height:22px"></i><i class="b" style="width:22px;height:22px"></i><i class="b" style="width:22px;height:22px"></i><i class="b" style="width:22px;height:22px"></i></div></div>
+      <div class="layer base"><div class="ic"><svg width="40" height="40"><use href="#i-chip"/></svg></div><div><div class="nm">算力<span class="tg">利润最厚</span></div><div class="ds">卖芯片和 GPU 时间</div></div><div class="dots"><i class="b"></i><i class="b"></i></div></div>
+    </div>
+    <div class="money"><span>钱往下流</span></div>
+  </div>
+  <div class="stack-cap"><span><i></i>圆点多少 = 玩家多少（示意）</span><span>越往下，越集中</span></div>
+
+  <div class="quote"><span class="qm">“</span><span>每一层，都是<span class="o">下面一层</span>的客户。</span><span class="qm">”</span></div>
+  <div class="foot"><span>AI 原理图解 01</span><span class="pn"><em>01</em> / 07</span></div>
+</section>
+
+<!-- ================= P2 算力 ================= -->
+<section class="page" id="p2">
+  <div class="kicker">第 1 层</div>
+  <h2 class="h h1">算力层：<span class="o">模型的动力源</span></h2>
+  <p class="intro">训练和运行大模型要做海量计算，靠的是 GPU 这类芯片。算力层就是提供计算的那批公司：<b>造芯片的，和把芯片装进机房、按时间租出去的云厂商</b>。</p>
+
+  <p class="para">要做好这一层，芯片要设计得出来，也要造得出来，最先进的 AI 芯片基本靠台积电代工。还得有配套软件，英伟达的 CUDA 做了很多年，开发者很难换走。云厂商拼的是建大机房：电力、散热、高速网络。</p>
+
+  <p class="para">现在做这一层的，主要是这几家：</p>
+  <div class="colist">
+      <div class="row"><b>英伟达</b>：GPU 加 CUDA 软件，训练大模型最常用的卡</div>
+      <div class="row"><b>AMD</b>：Instinct 系列 GPU，英伟达最主要的对手</div>
+      <div class="row"><b>谷歌、亚马逊</b>：自研 TPU、Trainium 芯片，放在自家云上用</div>
+      <div class="row"><b>华为昇腾、寒武纪</b>：国产 AI 芯片</div>
+      <div class="row"><b>AWS、微软 Azure、阿里云、火山引擎</b>：把 GPU 按小时租给别人的云</div></div>
+
+  <p class="para">赚钱的方式很直接：芯片按张卖，云按“卡时”租。卡一直供不应求，又很难替代，所以这一层<b>最有话语权，利润也最厚</b>。</p>
+
+  <div class="foot"><span>AI 原理图解 01</span><span class="pn"><em>02</em> / 07</span></div>
+</section>
+
+<!-- ================= P3 模型 ================= -->
+<section class="page" id="p3">
+  <div class="kicker">第 2 层</div>
+  <h2 class="h h1">模型层：<span class="o">AI 的大脑</span></h2>
+  <p class="intro">模型厂商拿着大量算力和数据，把大模型训练出来，再通过 API 或者自家 App 给别人用。<b>ChatGPT、豆包背后，都是这一层</b>。</p>
+
+  <p class="para">做模型要的东西很多：顶尖的研究和训练团队；大量高质量的数据；买得起算力，训练要花钱，每天给用户跑模型也要花钱；还得跟得上，几个月不更新就会被别人追上。</p>
+
+  <p class="para">国内外主要的模型公司：</p>
+  <div class="colist">
+      <div class="row"><b>OpenAI</b>：GPT 系列，做了 ChatGPT</div>
+      <div class="row"><b>Anthropic</b>：Claude 系列</div>
+      <div class="row"><b>谷歌</b>：Gemini 系列</div>
+      <div class="row"><b>Meta</b>：Llama 系列，公开模型权重</div>
+      <div class="row"><b>DeepSeek、阿里通义千问</b>：国内开源模型的代表</div>
+      <div class="row"><b>字节豆包、月之暗面 Kimi、智谱、MiniMax</b>：国内主要的模型公司</div></div>
+
+  <p class="para">赚钱有两条路。闭源的按 Token 卖 API，再加上会员订阅；开源的公开模型，靠云服务和企业版赚钱。各家能力越来越接近，<b>价格战打得最凶</b>。</p>
+
+  <div class="foot"><span>AI 原理图解 01</span><span class="pn"><em>03</em> / 07</span></div>
+</section>
+
+<!-- ================= P4 基础设施 ================= -->
+<section class="page" id="p4">
+  <div class="kicker">第 3 层</div>
+  <h2 class="h h1">基础设施层：<span class="o">开发工具箱</span></h2>
+  <p class="intro">企业想用大模型，很少直接对着模型从零写代码。这一层提供现成的工具：<b>接模型、存资料、搭流程、看效果</b>。它不训练模型，靠让别人用得更省事赚钱。</p>
+
+  <p class="para">这一层要做好，工程要稳，出了问题能兜住；能同时接很多家模型，换模型不用重写；文档和社区要做好，开发者才愿意用。</p>
+
+  <p class="para">常见的平台和工具有这些：</p>
+  <div class="colist">
+      <div class="row"><b>阿里云百炼、火山方舟、AWS Bedrock</b>：云厂商的模型平台，一个地方调用各家模型</div>
+      <div class="row"><b>OpenRouter、硅基流动</b>：模型聚合，一个接口调很多家模型</div>
+      <div class="row"><b>LangChain、LlamaIndex</b>：搭 AI 应用的开发框架</div>
+      <div class="row"><b>Milvus、Pinecone</b>：向量数据库，给 AI 存资料、查资料</div>
+      <div class="row"><b>Langfuse、LangSmith</b>：记录和评估 AI 的每一次调用</div></div>
+
+  <p class="para">收费一般按调用量、订阅或企业版。难处在于，<b>大云厂商随时可能把同样的功能做进自己的平台</b>。</p>
+
+  <div class="foot"><span>AI 原理图解 01</span><span class="pn"><em>04</em> / 07</span></div>
+</section>
+
+<!-- ================= P5 Agent ================= -->
+<section class="page" id="p5">
+  <div class="kicker">第 4 层</div>
+  <h2 class="h h1">Agent 层：<span class="o">会自己干活的 AI</span></h2>
+  <p class="intro">普通的 AI 应用是问一句答一句。Agent 在模型外面加上工具和循环，<b>能自己一步步把一段任务做完</b>：改代码、查资料、跑完一条流程。</p>
+
+  <p class="para">做 Agent 难在几件事：让模型会用工具；长任务里不跑偏，知道什么时候该停；记得自己做过什么；控制成本，一次任务可能要来回跑几十轮。</p>
+
+  <p class="para">现在常见的 Agent 产品：</p>
+  <div class="colist">
+      <div class="row"><b>Claude Code、Codex</b>：Anthropic 和 OpenAI 自己做的编程 Agent</div>
+      <div class="row"><b>Cursor、GitHub Copilot</b>：写代码的 AI 编辑器和插件</div>
+      <div class="row"><b>Manus</b>：通用 Agent，能自己上网查资料、做报告</div>
+      <div class="row"><b>扣子（Coze）、Dify</b>：搭 Agent 的平台，不怎么写代码也能搭</div></div>
+
+  <p class="para">收费主要靠订阅，用得多再按量加钱。这一层有个特点：<b>模型厂商自己也在做</b>，做 Agent 的创业公司夹在中间。</p>
+
+  <div class="foot"><span>AI 原理图解 01</span><span class="pn"><em>05</em> / 07</span></div>
+</section>
+
+<!-- ================= P6 应用 ================= -->
+<section class="page" id="p6">
+  <div class="kicker">第 5 层</div>
+  <h2 class="h h1">应用层：<span class="o">身边的 AI 产品</span></h2>
+  <p class="intro">应用层直接面对普通用户，解决一件具体的事：聊天问答、搜索、做图、做视频、写文档。<b>用户付的钱，都是从这一层进来的</b>。</p>
+
+  <p class="para">做应用，比的是懂用户，知道大家到底要什么；产品用起来顺手；能把产品推到很多人手里；用得越久，攒下的数据和使用习惯越难被替代。</p>
+
+  <p class="para">大家熟悉的应用，大多在这一层：</p>
+  <div class="colist">
+      <div class="row"><b>ChatGPT、豆包、元宝、Kimi</b>：对话助手</div>
+      <div class="row"><b>Perplexity、秘塔 AI 搜索</b>：AI 搜索</div>
+      <div class="row"><b>Midjourney、即梦、可灵</b>：生成图片和视频</div>
+      <div class="row"><b>Notion AI、WPS AI</b>：办公和写作里的 AI 功能</div></div>
+
+  <p class="para">赚钱靠会员订阅、按次付费和广告。这一层门槛最低、玩家最多；上游一涨价，或者模型自带了同样的功能，<b>日子就不好过</b>。</p>
+
+  <div class="foot"><span>AI 原理图解 01</span><span class="pn"><em>06</em> / 07</span></div>
+</section>
+
+<!-- ================= P7 连起来 ================= -->
+<section class="page" id="p7">
+  <div class="kicker">连起来看</div>
+  <h2 class="h h1">五层之间：<span class="o">钱往下流</span></h2>
+  <p class="intro">用户把钱付给应用和 Agent；它们按 Token 付钱给模型厂商；模型厂商再按卡时付钱给云和芯片。基础设施层在旁边，收应用和 Agent 的工具费。<b>每一层，都是下面一层的客户</b>。</p>
+
+  <p class="para">一家大公司，常常同时站在好几层：</p>
+  <div class="colist">
+      <div class="row"><b>字节</b>：火山引擎（算力）→ 豆包大模型（模型）→ 火山方舟、扣子（基础设施、Agent）→ 豆包 App（应用）</div>
+      <div class="row"><b>谷歌</b>：TPU 和 Google Cloud（算力）→ Gemini（模型）→ Vertex AI（基础设施）→ Gemini App（应用）</div></div>
+
+  <p class="para">看到一条 AI 新闻，可以先想想它落在哪一层：发新芯片是算力层，发新模型是模型层，上线一个新 App 是应用层。放回这张图里，就知道它在跟谁竞争、钱从哪来。</p>
+  <p class="para">这张图不用背。新闻看多了，自然能看出哪家公司在往哪一层扩张。</p>
+
+  <p class="src">资料基准 2026 年 8 月 · Agent 层为本系列补充<br>公司名单只列代表，变化很快，以当期公开信息为准</p>
+
+  <div class="foot"><span>AI 原理图解 01</span><span class="pn"><em>07</em> / 07</span></div>
+</section>
+
+
+
+
+
+
+
+<script>
+  // ?only=N 只显示第 N 页（导出用）；?check=1 输出版面自检报告到 body[data-report]
+  const q = new URLSearchParams(location.search);
+  const n = q.get('only');
+  if (n) { document.body.classList.add('only'); document.getElementById('p' + n).classList.add('show'); }
+  if (q.get('check')) {
+    const rep = [];
+    document.querySelectorAll('.page').forEach((pg, i) => {
+      const pr = pg.getBoundingClientRect();
+      const foot = pg.querySelector('.foot');
+      const ft = foot ? foot.getBoundingClientRect().top : pr.bottom;
+      let maxB = pr.top, right = [], clipped = [];
+      pg.querySelectorAll('*').forEach(el => {
+        if (foot && (el === foot || foot.contains(el))) return;
+        if (el.closest('.circuit')) return;
+        if (el.ownerSVGElement) return;
+        const r = el.getBoundingClientRect();
+        if (!r.width || !r.height) return;
+        if (r.bottom > maxB) maxB = r.bottom;
+        if (r.right > pr.right - 40 && !el.closest('.money')) right.push((el.className && el.className.baseVal === undefined ? el.className : el.tagName) + '');
+        const cs = getComputedStyle(el);
+        if (el.children.length === 0 && el.textContent.trim().length > 1 && !el.closest('.qm') && el.scrollHeight > el.clientHeight + 4 && cs.overflow === 'visible' && el.clientHeight > 0 && cs.height !== 'auto') clipped.push(el.textContent.trim().slice(0, 20));
+      });
+      const h1 = pg.querySelector('.h.h1, .cover-title'); const wrapped = h1 ? h1.getBoundingClientRect().height > parseFloat(getComputedStyle(h1).fontSize) * 1.6 : false;
+      rep.push({ page: i + 1, titleWrapped: wrapped, gapToFooter: Math.round(ft - maxB), pageBottomOverflow: Math.round(maxB - pr.bottom), rightEdge: right.slice(0, 5), textOverflow: clipped.slice(0, 5) });
+    });
+    document.body.setAttribute('data-report', JSON.stringify(rep));
+  }
+</script>
+</body>
+</html>
