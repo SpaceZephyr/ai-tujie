@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>AI名词解释 · 3:4 图组</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --or: #ef6a1c;
+  --or-soft: #fff1e7;
+  --or-line: #f6b58c;
+  --ink: #17161a;
+  --ink-2: #3b3a40;
+  --ink-3: #75737c;
+  --line: #e7e5e2;
+  --bg: #f6f5f2;
+  --card: #ffffff;
+  --shadow: 0 10px 30px rgba(40, 30, 20, .07), 0 2px 6px rgba(40, 30, 20, .04);
+  --sans: "PingFang SC", -apple-system, "Hiragino Sans GB", sans-serif;
+}
+body { text-wrap: pretty; background: #d9d7d3; font-family: var(--sans); color: var(--ink); padding: 40px 0; }
+body.only { padding: 0; background: var(--bg); }
+.page {
+  width: 1080px; height: 1440px; margin: 0 auto 40px; position: relative; overflow: hidden;
+  background: var(--bg); padding: 84px 84px 0;
+}
+body.only .page { margin: 0; }
+body.only .page:not(.show) { display: none; }
+
+/* 背景：角落点阵 + 电路线 */
+.page::before, .page::after { content: ""; position: absolute; pointer-events: none; }
+.page::before {
+  top: 0; right: 0; width: 360px; height: 300px;
+  background-image: radial-gradient(#d9d6d0 1.6px, transparent 1.7px);
+  background-size: 18px 18px;
+  -webkit-mask-image: radial-gradient(ellipse at top right, #000 10%, transparent 70%);
+}
+.page::after {
+  bottom: 0; left: 0; width: 320px; height: 260px;
+  background-image: radial-gradient(#dcd9d3 1.6px, transparent 1.7px);
+  background-size: 18px 18px;
+  -webkit-mask-image: radial-gradient(ellipse at bottom left, #000 10%, transparent 70%);
+}
+.circuit { position: absolute; pointer-events: none; opacity: .55; }
+
+/* 页脚 */
+.foot {
+  position: absolute; left: 84px; right: 84px; bottom: 56px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 22px; color: var(--ink-3); letter-spacing: .5px;
+}
+.foot b { color: var(--ink-2); font-weight: 600; }
+.foot .pn { font-variant-numeric: tabular-nums; }
+.foot .pn em { font-style: normal; color: var(--or); font-weight: 700; }
+
+/* ============ 封面 ============ */
+.cover-title { text-align: center; white-space: nowrap; font-size: 100px; font-weight: 600; line-height: 1.1; letter-spacing: 0; -webkit-text-stroke: 2.4px currentColor; }
+.cover-title .o { color: var(--or); }
+.cover-sub {
+  display: flex; align-items: center; justify-content: center; gap: 22px;
+  margin-top: 22px; font-size: 34px; color: var(--ink-2); letter-spacing: 4px; font-weight: 500;
+}
+.cover-sub i { display: block; width: 90px; height: 2px; background: var(--or); position: relative; }
+.cover-sub i::after { content: ""; position: absolute; top: -5px; width: 12px; height: 12px; border-radius: 50%; background: var(--or); }
+.cover-sub i.l::after { right: 0; }
+.cover-sub i.r::after { left: 0; }
+
+.task {
+  width: 520px; height: 96px; margin: 40px auto 0; background: var(--card); border-radius: 26px;
+  box-shadow: var(--shadow); display: flex; align-items: center; gap: 22px; padding: 0 34px;
+}
+.task .t1 { font-size: 34px; font-weight: 800; }
+.task .t2 { font-size: 24px; color: var(--ink-3); margin-top: 2px; }
+.task .t2 b { color: var(--or); font-weight: 600; }
+.down { width: 2px; height: 46px; margin: 0 auto; position: relative;
+  background: repeating-linear-gradient(to bottom, var(--or) 0 7px, transparent 7px 13px); }
+.down::after { content: ""; position: absolute; left: -11px; bottom: -6px;
+  border: 12px solid transparent; border-top: 16px solid var(--or); border-bottom: 0; }
+
+.loop { position: relative; width: 912px; height: 700px; margin: 6px auto 0; }
+.loop svg.ring { position: absolute; inset: 0; overflow: visible; }
+.node {
+  position: absolute; width: 250px; height: 120px; background: var(--card); border-radius: 60px;
+  box-shadow: var(--shadow); display: flex; align-items: center; gap: 16px; padding: 0 22px 0 18px;
+}
+.node .ic { width: 80px; height: 80px; border-radius: 50%; background: var(--or-soft); display: grid; place-items: center; flex: none; }
+.node .nm { font-size: 36px; font-weight: 800; line-height: 1.1; }
+.node .nm span { font-size: 20px; color: var(--or); font-weight: 700; margin-right: 6px; vertical-align: 4px; }
+.node .ds { font-size: 20px; color: var(--ink-3); line-height: 1.35; margin-top: 4px; }
+.n1 { left: 331px; top: 10px; }
+.n2 { left: 661px; top: 220px; }
+.n3 { left: 331px; top: 430px; }
+.n4 { left: 1px; top: 220px; }
+
+.hub {
+  position: absolute; left: 306px; top: 180px; width: 300px; height: 200px;
+  clip-path: polygon(14% 0, 86% 0, 100% 20%, 100% 80%, 86% 100%, 14% 100%, 0 80%, 0 20%);
+  background: var(--or); display: grid; place-items: center;
+}
+.hub-in {
+  position: absolute; left: 309px; top: 183px; width: 294px; height: 194px;
+  clip-path: polygon(14% 0, 86% 0, 100% 20%, 100% 80%, 86% 100%, 14% 100%, 0 80%, 0 20%);
+  background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.hub-in .h1 { font-size: 46px; font-weight: 600; -webkit-text-stroke: 1px currentColor; color: var(--or); letter-spacing: 2px; }
+.hub-in .h2 { font-size: 22px; color: var(--ink-2); margin-top: 4px; font-weight: 500; }
+.hub-in .stack { display: flex; gap: 6px; margin-top: 14px; align-items: flex-end; }
+.hub-in .stack i { display: block; width: 18px; background: var(--or-line); border-radius: 3px; }
+
+.lbl { position: absolute; font-size: 21px; color: var(--ink-3); font-weight: 500; background: var(--bg); padding: 2px 8px; }
+.lbl b { color: var(--or); font-weight: 700; }
+
+.answer {
+  position: absolute; left: 216px; top: 604px; width: 480px; height: 96px; background: var(--card);
+  border-radius: 26px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 22px; padding: 0 34px;
+}
+.answer .t1 { font-size: 34px; font-weight: 800; }
+.answer .t2 { font-size: 24px; color: var(--ink-3); margin-top: 2px; }
+.answer .t2 b { color: var(--or); font-weight: 600; }
+
+.quote {
+  margin: 34px 0 0; height: 116px; background: var(--card); border-radius: 30px; box-shadow: var(--shadow);
+  display: flex; align-items: center; justify-content: center; gap: 26px; font-size: 36px; font-weight: 700;
+}
+.quote .qm { font-size: 92px; color: var(--or); font-weight: 900; line-height: 1; height: 58px; font-family: Georgia, serif; }
+.quote .o { color: var(--or); }
+
+/* ============ 文字页 ============ */
+.kicker { display: flex; align-items: center; gap: 14px; font-size: 24px; color: var(--or); font-weight: 700; letter-spacing: 2px; }
+.kicker::before { content: ""; width: 34px; height: 3px; background: var(--or); }
+.h { font-size: 76px; font-weight: 600; line-height: 1.25; margin-top: 22px; letter-spacing: 1px; -webkit-text-stroke: 1.6px currentColor; }
+.h .o { color: var(--or); }
+.lead { font-size: 32px; line-height: 1.75; color: var(--ink-2); margin-top: 26px; }
+.lead b { color: var(--ink); font-weight: 700; }
+.lead .o, .body .o { color: var(--or); font-weight: 700; }
+
+.sheet { background: var(--card); border-radius: 32px; box-shadow: var(--shadow); padding: 44px 48px; margin-top: 40px; }
+
+.steps { display: grid; gap: 34px; }
+.step { display: grid; grid-template-columns: 96px 1fr; column-gap: 10px; }
+.step .no { font-size: 52px; font-weight: 600; -webkit-text-stroke: 1px currentColor; color: var(--or); line-height: 1; font-variant-numeric: tabular-nums; }
+.step .tt { font-size: 38px; font-weight: 800; line-height: 1.2; }
+.step .tx { font-size: 29px; line-height: 1.7; color: var(--ink-2); margin-top: 8px; }
+.step .tx b { color: var(--ink); }
+.step.key { background: var(--or-soft); border-radius: 22px; margin: -18px -24px; padding: 18px 24px; }
+.step .tag { font-size: 22px; font-weight: 600; color: #fff; background: var(--or); border-radius: 8px; padding: 3px 12px; margin-left: 16px; vertical-align: 6px; }
+
+.note { margin-top: 36px; display: flex; gap: 22px; align-items: flex-start; font-size: 30px; line-height: 1.72; color: var(--ink-2); }
+.note .ic { flex: none; width: 64px; height: 64px; border-radius: 50%; background: var(--or); display: grid; place-items: center; margin-top: 4px; }
+.note b { color: var(--ink); }
+
+/* 现象页 */
+.sym { display: grid; gap: 24px; margin-top: 36px; }
+.sym-row { background: var(--card); border-radius: 30px; box-shadow: var(--shadow); padding: 32px 44px 32px 40px; display: grid; grid-template-columns: 84px 1fr; column-gap: 14px; }
+.sym-row .ic { width: 72px; height: 72px; border-radius: 50%; background: var(--or-soft); display: grid; place-items: center; }
+.sym-row .s1 { font-size: 36px; font-weight: 800; line-height: 1.35; }
+.sym-row .s2 { font-size: 28px; color: var(--ink-3); line-height: 1.65; margin-top: 10px; }
+.sym-row .s2 b { color: var(--or); font-weight: 700; }
+.sym-row .go { font-size: 22px; color: var(--ink-3); margin-top: 14px; letter-spacing: 1px; }
+
+/* 记忆页 */
+.win { display: grid; grid-template-columns: 330px 1fr; gap: 40px; align-items: center; }
+.ctx { background: #fbfaf8; border: 2px solid var(--line); border-radius: 22px; padding: 18px; display: grid; gap: 10px; }
+.ctx .r { height: 46px; border-radius: 10px; background: var(--or-soft); color: var(--ink-2); font-size: 20px; display: flex; align-items: center; padding: 0 16px; gap: 10px; }
+.ctx .r em { font-style: normal; color: var(--or); font-weight: 700; font-size: 18px; }
+.ctx .r.fade { background: repeating-linear-gradient(135deg, #f1efec 0 8px, #fbfaf8 8px 16px); color: #aaa7a0; border: 1.5px dashed #d6d2cc; }
+.ctx .cap { font-size: 19px; color: var(--ink-3); text-align: center; margin-top: 4px; }
+.win .say { font-size: 30px; line-height: 1.75; color: var(--ink-2); }
+.win .say b { color: var(--ink); }
+.two { display: grid; gap: 30px; margin-top: 40px; }
+.two .it { display: grid; grid-template-columns: 70px 1fr; }
+.two .it .k { width: 52px; height: 52px; border-radius: 14px; background: var(--or); color: #fff; font-size: 28px; font-weight: 800; display: grid; place-items: center; margin-top: 4px; }
+.two .it .tt { font-size: 34px; font-weight: 800; line-height: 1.4; }
+.two .it .tx { font-size: 28px; line-height: 1.7; color: var(--ink-2); margin-top: 8px; }
+
+/* 停止页 */
+.brakes { display: grid; gap: 26px; }
+.brake { display: grid; grid-template-columns: 76px 1fr; column-gap: 16px; }
+.brake .ic { width: 68px; height: 68px; border-radius: 50%; background: var(--or-soft); display: grid; place-items: center; }
+.brake .tt { font-size: 36px; font-weight: 800; line-height: 1.3; }
+.brake .tt small { font-size: 24px; font-weight: 600; color: var(--or); margin-left: 12px; }
+.brake .tx { font-size: 28px; line-height: 1.68; color: var(--ink-2); margin-top: 6px; }
+.retry { margin-top: 40px; }
+.retry .tt { font-size: 34px; font-weight: 800; }
+.retry .tt .o { color: var(--or); }
+.cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 20px; }
+.cmp > div { border-radius: 24px; padding: 26px 30px; font-size: 26px; line-height: 1.6; }
+.cmp .bad { background: #efedea; color: var(--ink-3); }
+.cmp .good { background: var(--card); box-shadow: var(--shadow); color: var(--ink-2); }
+.cmp .tag { font-size: 22px; font-weight: 700; letter-spacing: 1px; margin-bottom: 8px; }
+.cmp .bad .tag { color: #9a968f; }
+.cmp .good .tag { color: var(--or); }
+.cmp code { font-family: "SF Mono", Menlo, monospace; font-size: 22px; background: var(--or-soft); color: var(--or); padding: 1px 8px; border-radius: 6px; }
+.cmp .bad code { background: #e2dfda; color: #8b877f; }
+
+/* 成本页 */
+.bars { display: flex; align-items: flex-end; gap: 12px; height: 170px; margin-top: 10px; padding: 0 4px; }
+.bars .b { flex: 1; background: var(--or-line); border-radius: 6px 6px 0 0; position: relative; }
+.bars .b .hist { position: absolute; left: 0; right: 0; bottom: 0; background: #f9d9c3; border-radius: 6px 6px 0 0; }
+.bars .b .new { position: absolute; left: 0; right: 0; background: var(--or); border-radius: 6px 6px 0 0; }
+.axis { display: flex; justify-content: space-between; font-size: 20px; color: var(--ink-3); margin-top: 12px; padding: 0 4px; }
+.legend { display: flex; gap: 28px; font-size: 21px; color: var(--ink-3); margin-top: 16px; }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.legend i { width: 18px; height: 18px; border-radius: 4px; display: inline-block; }
+.calc { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-top: 22px; }
+.calc .big { font-size: 60px; font-weight: 600; -webkit-text-stroke: 1px currentColor; color: var(--or); font-variant-numeric: tabular-nums; letter-spacing: -1px; }
+.calc .eq { font-size: 30px; color: var(--ink-2); }
+.save { margin-top: 30px; }
+.save .tt { font-size: 34px; font-weight: 800; }
+.save ol { list-style: none; margin-top: 12px; display: grid; gap: 4px; }
+.save li { font-size: 29px; line-height: 1.6; color: var(--ink-2); display: grid; grid-template-columns: 46px 1fr; }
+.save li span { color: var(--or); font-weight: 800; }
+
+/* 收尾页 */
+.formula { display: flex; align-items: center; justify-content: center; gap: 18px; margin-top: 64px; flex-wrap: wrap; }
+.formula .p { background: var(--card); box-shadow: var(--shadow); border-radius: 26px; padding: 26px 30px; text-align: center; min-width: 190px; }
+.formula .p .a { font-size: 40px; font-weight: 900; }
+.formula .p .b { font-size: 21px; color: var(--ink-3); margin-top: 4px; }
+.formula .op { font-size: 48px; font-weight: 900; color: var(--or); }
+.formula .res { background: var(--or); color: #fff; border-radius: 26px; padding: 26px 30px; text-align: center; margin-top: 18px; width: 100%; }
+.formula .res .a { font-size: 40px; font-weight: 900; }
+.formula .res .b { font-size: 22px; opacity: .9; margin-top: 4px; }
+.pair { margin-top: 64px; display: grid; gap: 26px; font-size: 34px; line-height: 1.7; color: var(--ink-2); }
+.pair b { color: var(--ink); }
+.next { margin-top: 72px; }
+.next .tt { font-size: 24px; color: var(--ink-3); letter-spacing: 3px; font-weight: 700; }
+.next ul { list-style: none; margin-top: 18px; display: grid; gap: 16px; }
+.next li { display: flex; align-items: baseline; gap: 18px; font-size: 29px; color: var(--ink-2); }
+.next li b { color: var(--ink); font-weight: 800; flex: none; }
+.next li b::after { content: " →"; color: var(--or); }
+
+/* ============ 行业划分 · 封面 ============ */
+.user-pill { width: 470px; height: 84px; margin: 34px 0 0 calc((912px - 82px - 470px) / 2); background: var(--card); border-radius: 42px; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center; gap: 16px; font-size: 30px; font-weight: 600; }
+.user-pill small { font-size: 22px; color: var(--ink-3); font-weight: 400; }
+.user-pill small b { color: var(--or); font-weight: 600; }
+.down.l { margin: 0 0 0 calc((912px - 82px) / 2); }
+.stackwrap { display: flex; gap: 18px; margin-top: 8px; }
+.stack { flex: 1; display: grid; gap: 14px; }
+.layer { height: 116px; background: var(--card); border-radius: 26px; box-shadow: var(--shadow); display: grid; grid-template-columns: 72px 1fr 210px; align-items: center; column-gap: 18px; padding: 0 26px 0 20px; }
+.layer .ic { width: 72px; height: 72px; border-radius: 50%; background: var(--or-soft); display: grid; place-items: center; }
+.layer .nm { font-size: 34px; font-weight: 600; line-height: 1.15; display: flex; align-items: center; gap: 12px; }
+.layer .nm .tg { font-size: 19px; font-weight: 600; color: var(--or); background: var(--or-soft); border-radius: 7px; padding: 2px 10px; }
+.layer .ds { font-size: 21px; color: var(--ink-3); margin-top: 6px; }
+.layer .dots { display: flex; flex-wrap: wrap; gap: 7px; justify-content: flex-end; align-content: center; }
+.layer .dots i { width: 13px; height: 13px; border-radius: 50%; background: var(--or-line); display: block; }
+.layer .dots i.b { width: 30px; height: 30px; background: var(--or); }
+.layer.base { background: var(--ink); }
+.layer.base .nm { color: #fff; }
+.layer.base .ds { color: #b9b6bf; }
+.layer.base .ic { background: #2c2a31; }
+.layer.base .nm .tg { background: var(--or); color: #fff; }
+.money { width: 64px; position: relative; display: flex; justify-content: center; }
+.money::before { content: ""; position: absolute; top: 6px; bottom: 22px; left: 31px; width: 3px; background: repeating-linear-gradient(to bottom, var(--or) 0 9px, transparent 9px 16px); }
+.money::after { content: ""; position: absolute; bottom: 4px; left: 20px; border: 13px solid transparent; border-top: 18px solid var(--or); border-bottom: 0; }
+.money span { position: relative; writing-mode: vertical-rl; background: var(--bg); color: var(--or); font-size: 26px; font-weight: 600; letter-spacing: 8px; padding: 14px 0; margin-top: 200px; height: fit-content; }
+.stack-cap { display: flex; justify-content: space-between; font-size: 20px; color: var(--ink-3); margin: 14px 82px 0 6px; }
+.stack-cap i { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--or-line); margin-right: 8px; vertical-align: 1px; }
+
+/* 五层表 */
+.ltable { display: grid; }
+.lrow { display: grid; grid-template-columns: 168px 1fr; column-gap: 18px; padding: 30px 0; border-top: 1.5px solid var(--rule, #efedea); }
+.lrow:first-child { border-top: 0; padding-top: 0; }
+.lrow:last-child { padding-bottom: 0; }
+.lrow .ln { font-size: 34px; font-weight: 600; line-height: 1.3; }
+.lrow .ln small { display: block; font-size: 20px; color: var(--or); font-weight: 600; margin-bottom: 2px; letter-spacing: 1px; }
+.lrow .lt { font-size: 27px; line-height: 1.62; color: var(--ink-2); }
+.lrow .lt b { color: var(--ink); font-weight: 600; }
+.lrow .lt em { font-style: normal; color: var(--ink-3); font-size: 24px; display: block; margin-top: 2px; }
+
+/* 钱往下流 */
+.flow { display: flex; flex-direction: column; align-items: center; }
+.fnode { width: 520px; height: 96px; border-radius: 26px; background: var(--card); box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center; gap: 16px; font-size: 32px; font-weight: 600; }
+.fnode small { font-size: 22px; color: var(--ink-3); font-weight: 400; }
+.fnode.top { background: var(--or); color: #fff; }
+.fnode.top small { color: #ffe3d2; }
+.fnode.bot { background: var(--ink); color: #fff; }
+.fnode.bot small { color: #b9b6bf; }
+.farrow { height: 74px; width: 520px; position: relative; }
+.farrow::before { content: ""; position: absolute; left: 259px; top: 6px; bottom: 16px; width: 3px; background: var(--or); }
+.farrow::after { content: ""; position: absolute; left: 249px; bottom: 4px; border: 11px solid transparent; border-top: 15px solid var(--or); border-bottom: 0; }
+.farrow span { position: absolute; left: 290px; top: 50%; transform: translateY(-50%); font-size: 24px; color: var(--or); font-weight: 600; white-space: nowrap; }
+.farrow span em { font-style: normal; color: var(--ink-3); font-weight: 400; margin-left: 10px; font-size: 22px; }
+.side-note { margin-top: 26px; font-size: 24px; color: var(--ink-3); text-align: center; }
+
+/* 推论 */
+.infer { display: grid; gap: 30px; }
+.infer .it { display: grid; grid-template-columns: 70px 1fr; }
+.infer .it .k { width: 52px; height: 52px; border-radius: 14px; background: var(--or); color: #fff; font-size: 28px; font-weight: 600; display: grid; place-items: center; margin-top: 4px; }
+.infer .it .tt { font-size: 35px; font-weight: 600; line-height: 1.38; }
+.infer .it .tx { font-size: 28px; line-height: 1.68; color: var(--ink-2); margin-top: 8px; }
+.infer .it.key { background: var(--or-soft); border-radius: 24px; margin: -22px -26px; padding: 22px 26px; }
+.moat { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+.moat span { font-size: 24px; background: var(--card); box-shadow: var(--shadow); border-radius: 12px; padding: 8px 16px; color: var(--ink-2); }
+
+/* 对号入座表 */
+.seat { width: 100%; border-collapse: collapse; }
+.seat th { text-align: left; font-size: 21px; color: var(--ink-3); font-weight: 600; padding: 0 0 14px; letter-spacing: 1px; }
+.seat td { vertical-align: top; padding: 18px 0; border-top: 1.5px solid #efedea; font-size: 24px; line-height: 1.55; color: var(--ink-2); }
+.seat td:first-child { font-size: 29px; font-weight: 600; color: var(--ink); width: 150px; }
+.seat td:nth-child(2) { padding-right: 26px; width: 340px; }
+.seat tr.me td:first-child { color: var(--or); }
+.forms { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 32px; }
+.forms > div:first-child { grid-column: 1 / -1; }
+.forms .ft { font-size: 24px; color: var(--ink-3); font-weight: 600; letter-spacing: 2px; }
+.forms .fc { background: var(--card); box-shadow: var(--shadow); border-radius: 24px; padding: 22px 28px; }
+.forms .fc b { display: block; font-size: 32px; font-weight: 600; color: var(--ink); }
+.forms .fc span { display: block; font-size: 25px; color: var(--ink-3); margin-top: 8px; line-height: 1.5; }
+.remind { margin-top: 34px; font-size: 28px; line-height: 1.7; color: var(--ink-2); }
+.remind b { color: var(--ink); }
+.src { margin-top: 22px; font-size: 20px; color: var(--ink-3); line-height: 1.6; }
+
+/* ============ 文字叙述页（优先用这一套） ============ */
+.intro { font-size: 30px; line-height: 1.75; color: var(--ink-2); margin-top: 24px; }
+.intro b { color: var(--ink); font-weight: 600; }
+.sec { margin-top: 32px; }
+.sec .lb { display: flex; align-items: center; gap: 10px; font-size: 23px; color: var(--or); font-weight: 600; letter-spacing: 2px; margin-bottom: 8px; }
+.sec .lb::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--or); }
+.sec p { font-size: 28px; line-height: 1.7; color: var(--ink-2); }
+.sec p b { color: var(--ink); font-weight: 600; }
+.colist { background: var(--card); border-radius: 24px; box-shadow: var(--shadow); padding: 30px 36px; display: grid; gap: 14px; }
+.colist .row { font-size: 28px; line-height: 1.6; color: var(--ink-2); }
+.colist .row b { color: var(--ink); font-weight: 600; }
+.h.h1 { font-size: 72px; line-height: 1.2; margin-top: 18px; }
+.para { font-size: 30px; line-height: 1.8; color: var(--ink-2); margin-top: 34px; }
+.para b { color: var(--ink); font-weight: 600; }
+.para + .colist { margin-top: 18px; }
+.h1 + .intro { margin-top: 36px; font-size: 32px; line-height: 1.8; }
+.colist + .para { margin-top: 36px; }
+
+/* ============ 本套封面：一次调用的四段 ============ */
+.gm-flow { margin-top: 44px; position: relative; padding-left: 78px; }
+.gm-stage {
+  background: var(--card); border-radius: 26px; box-shadow: var(--shadow);
+  padding: 22px 30px; display: flex; align-items: center; gap: 24px;
+}
+.gm-stage .gm-no {
+  flex: 0 0 auto; width: 54px; height: 54px; border-radius: 50%;
+  background: var(--or-soft); color: var(--or); font-size: 28px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.gm-stage.dark { background: var(--ink); }
+.gm-stage.dark .gm-nm { color: #fff; }
+.gm-stage.dark .gm-no { background: rgba(255,255,255,.14); color: #fff; }
+.gm-stage.dark .gm-tags span { background: rgba(255,255,255,.12); color: #fff; }
+.gm-nm { font-size: 34px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+.gm-tags { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 9px; }
+.gm-tags span {
+  font-size: 22px; color: var(--ink-2); background: var(--or-soft);
+  border-radius: 999px; padding: 5px 14px; white-space: nowrap;
+}
+.gm-arrow { height: 34px; margin-left: 27px; position: relative;
+  background: repeating-linear-gradient(to bottom, var(--or) 0 7px, transparent 7px 13px);
+  width: 2px; }
+.gm-arrow::after { content: ""; position: absolute; left: -10px; bottom: -5px;
+  border: 11px solid transparent; border-top: 14px solid var(--or); }
+.gm-loop { position: absolute; left: 0; top: 30px; bottom: 34px; width: 70px; pointer-events: none; }
+.gm-cap { margin-top: 18px; padding-left: 78px; display: flex; justify-content: space-between;
+  font-size: 21px; color: var(--ink-3); }
+.gm-cap i { display: inline-block; width: 26px; height: 2px; margin-right: 10px; vertical-align: 4px;
+  background: repeating-linear-gradient(to right, var(--or) 0 6px, transparent 6px 11px); }
+</style>
+</head>
+<body>
+
+<!-- 可复用图标 -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <marker id="ah" viewBox="0 0 12 12" refX="7" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+      <path d="M1 1 L11 6 L1 11 Z" fill="#ef6a1c"/>
+    </marker>
+    <symbol id="i-think" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 7a12 12 0 0 0-7 21.7c1.4 1 2.2 2.4 2.2 4V35h9.6v-2.3c0-1.6.8-3 2.2-4A12 12 0 0 0 24 7z"/><path d="M19.5 40h9M21 44h6"/><path d="M24 15v7l4 3"/></g></symbol>
+    <symbol id="i-do" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M29 8a9 9 0 0 0-8.6 11.7L8 32.1a3.5 3.5 0 0 0 5 5l12.4-12.4A9 9 0 0 0 37 16.5l-5.5 5.5-5-1-1-5L31 10.4A9 9 0 0 0 29 8z"/></g></symbol>
+    <symbol id="i-see" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 24s7.3-13 20-13 20 13 20 13-7.3 13-20 13S4 24 4 24z"/><circle cx="24" cy="24" r="6"/></g></symbol>
+    <symbol id="i-again" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M38 20A15 15 0 0 0 10.6 15M10 28a15 15 0 0 0 27.4 5"/><path d="M10 7v8h8M38 41v-8h-8"/></g></symbol>
+    <symbol id="i-chat" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10h32a3 3 0 0 1 3 3v18a3 3 0 0 1-3 3H22l-9 7v-7H8a3 3 0 0 1-3-3V13a3 3 0 0 1 3-3z"/><path d="M15 20h18M15 26h11"/></g></symbol>
+    <symbol id="i-flag" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="18"/><path d="M16 24.5l5.5 5.5L33 18.5"/></g></symbol>
+    <symbol id="i-stop" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="18"/><path d="M16 24.5l5.5 5.5L33 18.5"/></g></symbol>
+    <symbol id="i-count" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="34" height="34" rx="6"/><path d="M15 17h18M15 24h18M15 31h10"/></g></symbol>
+    <symbol id="i-clock" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="17"/><path d="M24 14v10l7 5"/></g></symbol>
+    <symbol id="i-pause" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="17"/><path d="M20 17v14M28 17v14"/></g></symbol>
+    <symbol id="i-bill" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 6h26v36l-4.3-3-4.4 3-4.3-3-4.3 3-4.4-3-4.3 3z"/><path d="M17 16h14M17 23h14M17 30h8"/></g></symbol>
+    <symbol id="i-bulb" viewBox="0 0 48 48"><g fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M24 8a11 11 0 0 0-6.4 20c1.3.9 2 2.3 2 3.8V34h8.8v-2.2c0-1.5.7-2.9 2-3.8A11 11 0 0 0 24 8z"/><path d="M20 39h8"/></g></symbol>
+    <symbol id="i-chip" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="12" y="12" width="24" height="24" rx="4"/><rect x="19" y="19" width="10" height="10" rx="1.5"/><path d="M18 6v6M24 6v6M30 6v6M18 36v6M24 36v6M30 36v6M6 18h6M6 24h6M6 30h6M36 18h6M36 24h6M36 30h6"/></g></symbol>
+    <symbol id="i-model" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 5l16 9v20l-16 9-16-9V14z"/><path d="M8 14l16 9 16-9M24 23v20"/></g></symbol>
+    <symbol id="i-infra" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 6L42 15 24 24 6 15z"/><path d="M6 24l18 9 18-9M6 33l18 9 18-9"/></g></symbol>
+    <symbol id="i-agent" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="15" width="30" height="24" rx="7"/><circle cx="18.5" cy="27" r="3"/><circle cx="29.5" cy="27" r="3"/><path d="M24 15V9"/><circle cx="24" cy="7" r="2.5"/><path d="M5 25v6M43 25v6"/></g></symbol>
+    <symbol id="i-app" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="14" height="14" rx="3.5"/><rect x="27" y="7" width="14" height="14" rx="3.5"/><rect x="7" y="27" width="14" height="14" rx="3.5"/><rect x="27" y="27" width="14" height="14" rx="3.5"/></g></symbol>
+    <symbol id="i-user" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="16" r="8"/><path d="M8 42c1.5-9 8-14 16-14s14.5 5 16 14"/></g></symbol>
+    <symbol id="i-warn" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 7L43 40H5z"/><path d="M24 19v10M24 34v.5"/></g></symbol>
+    <symbol id="i-down" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 30l10-10 8 8 14-14"/><path d="M40 14v9M40 14h-9" transform="rotate(90 40 14) translate(0 0)"/></g></symbol>
+  </defs>
+</svg>
+
+
+<!-- ============ P1 封面 ============ -->
+<section class="page" id="p1">
+  <h1 class="cover-title"><span class="o">AI</span> 名词怎么记？</h1>
+  <div class="cover-sub"><i class="l"></i>顺着它干活的顺序走一遍<i class="r"></i></div>
+
+  <div class="gm-flow">
+    <svg class="gm-loop" viewBox="0 0 70 600" preserveAspectRatio="none">
+      <path d="M62 592 H20 Q8 592 8 578 V22 Q8 8 20 8 H62" fill="none"
+            stroke="#ef6a1c" stroke-width="2.4" stroke-dasharray="7 6"/>
+      <path d="M54 1 L64 8 L54 15 Z" fill="#ef6a1c"/>
+    </svg>
+    <div class="gm-stage">
+      <div class="gm-no">1</div>
+      <div><div class="gm-nm">发过去什么</div>
+        <div class="gm-tags"><span>提示词</span><span>Token</span><span>上下文窗口</span><span>RAG</span></div></div>
+    </div>
+    <div class="gm-arrow"></div>
+
+    <div class="gm-stage">
+      <div class="gm-no">2</div>
+      <div><div class="gm-nm">它怎么算</div>
+        <div class="gm-tags"><span>下一个词预测</span><span>参数量</span><span>温度</span><span>推理模型</span></div></div>
+    </div>
+    <div class="gm-arrow"></div>
+
+    <div class="gm-stage">
+      <div class="gm-no">3</div>
+      <div><div class="gm-nm">为什么会瞎编</div>
+        <div class="gm-tags"><span>幻觉</span><span>知识截止</span><span>多模态</span><span>开源模型</span></div></div>
+    </div>
+    <div class="gm-arrow"></div>
+
+    <div class="gm-stage dark">
+      <div class="gm-no">4</div>
+      <div><div class="gm-nm">它还能自己动手</div>
+        <div class="gm-tags"><span>Agent</span><span>工具调用</span><span>Skill</span><span>MCP</span></div></div>
+    </div>
+  </div>
+
+  <div class="gm-cap"><span><i></i>虚线：每转一圈，前面三段全部重算</span><span>一共十六个词</span></div>
+
+  <div class="quote">不认识的词，<span class="o">先找它在哪一段</span></div>
+
+  <div class="foot"><span>AI 原理图解 19</span><span class="pn"><em>01</em> / 07</span></div>
+</section>
+
+<!-- ============ P2 ============ -->
+<section class="page" id="p2">
+  <div class="kicker">第 1 段</div>
+  <h2 class="h h1">发过去的，<span class="o">它才看得见</span></h2>
+  <p class="intro">模型不会自己去翻资料。这一次它能看到什么，全靠我们连着问题一起发过去。<b>发进去的东西，决定了它能答成什么样</b>。</p>
+
+  <p class="para">一般发四样：产品的设定和规矩、之前聊过的内容、从资料库里搜到的片段、还有刚打的这句话。四样一起打包，装进一个有上限的盒子。</p>
+
+  <p class="para">这四样东西各有各的名字，也各有各的坑：</p>
+  <div class="colist">
+    <div class="row"><b>提示词</b>：这一次发过去的全部文字，更像一份需求说明。写得越具体答得越准，没写清的地方它会自己猜一个</div>
+    <div class="row"><b>Token</b>：模型不按字数算，按小块算。一个英文单词大概一块，一个汉字一到两块。收多少钱、能装多长、一分钟最多发多少，全按块数</div>
+    <div class="row"><b>上下文窗口</b>：一次最多装多少块。装满了就自动丢掉最早的那部分，而且它不会告诉你丢了</div>
+    <div class="row"><b>RAG</b>：先去资料库里搜出相关段落，再连问题一起发给模型。公司知识库基本都是这么做的</div>
+  </div>
+
+  <p class="para">这四个里 Token 最常被低估。<b>一份文档到底多少块，得真切一遍才知道，按字数估基本估不准</b>。</p>
+
+  <div class="foot"><span>AI 原理图解 19</span><span class="pn"><em>02</em> / 07</span></div>
+</section>
+
+<!-- ============ P3 ============ -->
+<section class="page" id="p3">
+  <div class="kicker">第 2 段</div>
+  <h2 class="h h1">它其实只会<span class="o">猜下一个词</span></h2>
+  <p class="intro">东西发进去之后，模型只干一件事：猜下一个词是什么，猜完接上去，再接着猜下一个。<b>一段回答，就是这么几百次攒出来的</b>。</p>
+
+  <p class="para">这件事本身就有个名字，叫下一个词预测。它厉害在哪、蠢在哪，基本都能从这一句推出来。至于它有多大本事、知道多少事，在训练的时候就定死了，用的时候改不了。</p>
+
+  <p class="para">剩下三个，是真正用的时候会碰到的：</p>
+  <div class="colist">
+    <div class="row"><b>参数量</b>：模型有多大，写成 7B、70B。数字大不等于更聪明，也和能读多长完全没关系</div>
+    <div class="row"><b>温度</b>：调它答得多保守。调低每次答得差不多，适合干活；调高更发散，适合写文案</div>
+    <div class="row"><b>推理模型</b>：开口之前先自己想一大段。难题上更准，但想的那一段也要照样收钱</div>
+  </div>
+
+  <p class="para">参数量最容易被误会。<b>它说的是模型有多大，不是它一次能读多少字，这是两个毫不相干的数</b>。</p>
+
+  <div class="foot"><span>AI 原理图解 19</span><span class="pn"><em>03</em> / 07</span></div>
+</section>
+
+<!-- ============ P4 ============ -->
+<section class="page" id="p4">
+  <div class="kicker">第 3 段</div>
+  <h2 class="h h1">它为什么会<span class="o">一本正经地瞎编</span></h2>
+  <p class="intro">它的字是当场编出来的，不是从某个库里查出来的。<b>这一点，是它和搜索引擎最大的区别</b>。</p>
+
+  <p class="para">当场编，带来两个后果。不知道的时候，它会拿最像的内容顶上；训练结束之后发生的事，它一概不知道。</p>
+
+  <p class="para">它的毛病，基本都能归到这四个词上：</p>
+  <div class="colist">
+    <div class="row"><b>幻觉</b>：不知道就拿最像的顶上，语气和说真话一模一样。这是机制带来的，只能防，等不到修好</div>
+    <div class="row"><b>知识截止</b>：训练到某个日期就停了，之后的事不知道。问最近的消息，得自己把资料贴给它</div>
+    <div class="row"><b>多模态</b>：能看图、能听声音的模型。这些本事多半是后加的，小字、表格线、精确位置最容易看错</div>
+    <div class="row"><b>开源模型</b>：能下载下来自己装的模型。自己装买到的是可控，不是省钱</div>
+  </div>
+
+  <p class="para">开源这条最容易误会。公开的一般只有模型本身，训练用的数据和代码通常不给；<b>自己装还得配显卡、自己运维，量不大的时候比直接调接口更贵</b>。</p>
+
+  <div class="foot"><span>AI 原理图解 19</span><span class="pn"><em>04</em> / 07</span></div>
+</section>
+
+<!-- ============ P5 ============ -->
+<section class="page" id="p5">
+  <div class="kicker">第 4 段</div>
+  <h2 class="h h1">它<span class="o">开始自己动手</span>了</h2>
+  <p class="intro">光会说话不够用。把一份工具说明书一起发进去，它就能说出要用哪个工具、怎么用，<b>再由程序去执行，把结果送回来给它接着看</b>。</p>
+
+  <p class="para">这样一来一回几十轮，就是所谓的 Agent 循环。每转一圈，前面装进去的东西要重新发一遍、重新算一遍，越滚越长。</p>
+
+  <p class="para">这四个词最近到处都在说：</p>
+  <div class="colist">
+    <div class="row"><b>Agent</b>：它不在模型里面，是套在模型外面的一层，管三件事：决定下一步、调工具、卡住哪些事不许做</div>
+    <div class="row"><b>工具调用</b>：给它一份工具说明书，它说用哪个、怎么用，程序照办。给了什么工具，它就只能干什么</div>
+    <div class="row"><b>Skill</b>：一包提前写好的做事方法，用到时才调出来，平时不占地方</div>
+    <div class="row"><b>MCP</b>：一个统一接口，让 Agent 能接上各种外部服务。接一次，到处能用</div>
+  </div>
+
+  <p class="para">Agent 又慢又贵，原因就在那个越滚越长上。转二十轮，最早那批内容就被重新算了二十遍。<b>想省钱得从少装点东西下手，换个便宜模型作用不大</b>。</p>
+
+  <div class="foot"><span>AI 原理图解 19</span><span class="pn"><em>05</em> / 07</span></div>
+</section>
+
+<!-- ============ P6 ============ -->
+<section class="page" id="p6">
+  <div class="kicker">最容易混</div>
+  <h2 class="h h1">这几个<span class="o">最容易搞混</span></h2>
+  <p class="intro">背定义帮不上忙。真正让人栽跟头的是下面这几组，它们听着像一回事。</p>
+
+  <div class="colist">
+    <div class="row"><b>Token 不按字数算</b>：一个英文单词大概一块，一个生僻汉字可能占到三块。所以按字数估价，估不准</div>
+    <div class="row"><b>微调教不会新知识</b>：微调是拿一批例子重新训一遍，改的是它说话的口气和格式。想让它知道公司的规章，该用 RAG，不是微调</div>
+    <div class="row"><b>Agent 不在模型里</b>：它是套在模型外面的一层。同一个模型，外面这层做得好就能干活，做得差就来回绕圈</div>
+    <div class="row"><b>Skill 和 MCP 不一样</b>：一个装做事的方法，一个装对外的接口。谁也替代不了谁</div>
+    <div class="row"><b>网页版和接口是两回事</b>：同一个模型，网页版给人聊，接口给程序调。两边的收费方式、能调的参数、聊天记录怎么留，都不一样</div>
+  </div>
+
+  <p class="para">第二条最费钱。<b>不少团队花几个月做微调，最后发现搭个检索就解决了</b>。</p>
+
+  <p class="para">还有一条容易踩：模型分不清哪句是命令、哪句是资料。它读到的材料里要是藏了一句命令，它可能真的照做，这叫提示注入。</p>
+
+  <div class="foot"><span>AI 原理图解 19</span><span class="pn"><em>06</em> / 07</span></div>
+</section>
+
+<!-- ============ P7 ============ -->
+<section class="page" id="p7">
+  <div class="kicker">放在一起看</div>
+  <h2 class="h h1">记不住<span class="o">也没关系</span></h2>
+  <p class="intro">上面四段连起来，就是每问一次 AI，它走完的全程。<b>碰到生词，先想它是哪一段的事，比背定义管用</b>。</p>
+
+  <p class="para">试一个没讲过的词：蒸馏。它是拿大模型去教小模型，属于训练时候的事，落在模型算那一段的前面。所以它影响的是模型本身的水平，和装进去多少、会不会编，都没关系。</p>
+
+  <p class="para">再试一个：限流。它是接口一分钟最多让你发多少块，落在装进去那一段。所以碰到限流，该压的是发过去的量，不是换模型。</p>
+
+  <p class="para">四段速查，存下来备用：</p>
+  <div class="colist">
+    <div class="row"><b>1 装进去</b>　提示词 · Token · 上下文窗口 · RAG</div>
+    <div class="row"><b>2 模型算</b>　下一个词预测 · 参数量 · 温度 · 推理模型</div>
+    <div class="row"><b>3 吐出来</b>　幻觉 · 知识截止 · 多模态 · 开源模型</div>
+    <div class="row"><b>4 动手</b>　Agent · 工具调用 · Skill · MCP</div>
+  </div>
+
+  <p class="src">资料来源：AI 名词地图<br>名词边界以当期公开资料为准<br>下一篇：LLM 运行原理</p>
+
+  <div class="foot"><span>AI 原理图解 19</span><span class="pn"><em>07</em> / 07</span></div>
+</section>
+
+
+<script>
+  // ?only=N 只显示第 N 页（导出用）；?check=1 输出版面自检报告到 body[data-report]
+  const q = new URLSearchParams(location.search);
+  const n = q.get('only');
+  if (n) { document.body.classList.add('only'); document.getElementById('p' + n).classList.add('show'); }
+  if (q.get('check')) {
+    const rep = [];
+    document.querySelectorAll('.page').forEach((pg, i) => {
+      const pr = pg.getBoundingClientRect();
+      const foot = pg.querySelector('.foot');
+      const ft = foot ? foot.getBoundingClientRect().top : pr.bottom;
+      let maxB = pr.top, right = [], clipped = [];
+      pg.querySelectorAll('*').forEach(el => {
+        if (foot && (el === foot || foot.contains(el))) return;
+        if (el.closest('.circuit')) return;
+        if (el.ownerSVGElement) return;
+        const r = el.getBoundingClientRect();
+        if (!r.width || !r.height) return;
+        if (r.bottom > maxB) maxB = r.bottom;
+        if (r.right > pr.right - 40 && !el.closest('.money')) right.push((el.className && el.className.baseVal === undefined ? el.className : el.tagName) + '');
+        const cs = getComputedStyle(el);
+        if (el.children.length === 0 && el.textContent.trim().length > 1 && !el.closest('.qm') && el.scrollHeight > el.clientHeight + 4 && cs.overflow === 'visible' && el.clientHeight > 0 && cs.height !== 'auto') clipped.push(el.textContent.trim().slice(0, 20));
+      });
+      const h1 = pg.querySelector('.h.h1, .cover-title'); const wrapped = h1 ? h1.getBoundingClientRect().height > parseFloat(getComputedStyle(h1).fontSize) * 1.6 : false;
+      rep.push({ page: i + 1, titleWrapped: wrapped, gapToFooter: Math.round(ft - maxB), pageBottomOverflow: Math.round(maxB - pr.bottom), rightEdge: right.slice(0, 5), textOverflow: clipped.slice(0, 5) });
+    });
+    document.body.setAttribute('data-report', JSON.stringify(rep));
+  }
+</script>
+</body>
+</html>
