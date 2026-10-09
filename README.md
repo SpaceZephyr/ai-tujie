@@ -36,12 +36,14 @@
 | 20 | [知识库怎么搭？](20-LLM知识库搭建) | 搭建流程图 |
 | 21 | [AI 怎么记住事？](21-AI记忆) | 跨会话记忆分流图 |
 | 22 | [AI 怎么动手？](22-工具调用) | 模型与工具时序图 |
-| 23 | [该用 Agent 吗？](23-工作流与Agent) | 工作流与 Agent 分岔图 |
-| 24 | [中断后怎么接着干？](24-长任务续跑) | 长任务接力流程图 |
-| 25 | [AI 哪步该问人？](25-人工确认) | 操作风险闸门图 |
-| 26 | [Agent 怎么验收？](26-Agent评测) | 任务验收循环图 |
+| 23 | [Skill 该如何制作？](23-Skill制作) | Skill 结构与加载图 |
+| 24 | [Agent 架构解析](24-Agent架构) | Agent 分层架构图 |
+| 25 | [Benchmark：Agent 怎么评测？](25-Agent基准评测) | 基准任务与判分图 |
+| 26 | [通用 Agent 与个人 Agent](26-通用与个人Agent) | 两种产品取向对照图 |
 
-编号是整个系列的排期编号，26 套图组已全部完成。阅读路径是"看清这一行 → 模型怎么来的 → 怎么用上它 → 让它干好活 → 让它自己干 → 让它稳定干活"。图组完成不代表已经发布。
+编号是整个系列的排期编号，26 套图组已全部完成。阅读路径是"看清这一行 → 模型怎么来的 → 怎么用上它 → 让它干好活 → 让它自己干 → 看懂并搭好 Agent"。图组完成不代表已经发布。
+
+23–26 于 2026-10-09 按官方文档与原始论文重做，内容依次是 Skill 制作、Agent 架构、公开基准评测和通用 / 个人 Agent。最后一组使用便于理解产品的分类视角，具体产品可能同时具有两类能力。
 
 ## 预览
 
@@ -83,12 +85,12 @@
 <tr>
 <td><img src="21-AI记忆/01.png" width="260"></td>
 <td><img src="22-工具调用/01.png" width="260"></td>
-<td><img src="23-工作流与Agent/01.png" width="260"></td>
+<td><img src="23-Skill制作/01.png" width="260"></td>
 </tr>
 <tr>
-<td><img src="24-长任务续跑/01.png" width="260"></td>
-<td><img src="25-人工确认/01.png" width="260"></td>
-<td><img src="26-Agent评测/01.png" width="260"></td>
+<td><img src="24-Agent架构/01.png" width="260"></td>
+<td><img src="25-Agent基准评测/01.png" width="260"></td>
+<td><img src="26-通用与个人Agent/01.png" width="260"></td>
 </tr>
 </table>
 
@@ -110,6 +112,15 @@ cd 16-Skill运行原理
 ```
 
 字体用的是苹方（PingFang SC），在 macOS 上导出效果最好。
+
+## 23–26 的资料
+
+核对日期：2026-10-09。图中示意结构用于解释原理，不代表任何一家产品的完整内部实现。
+
+- Skill 制作：[OpenAI Skills](https://developers.openai.com/api/docs/guides/tools-skills)、[Anthropic Skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices)
+- Agent 架构：[Anthropic Building effective agents](https://www.anthropic.com/engineering/building-effective-agents)、[OpenAI Agents SDK](https://developers.openai.com/api/docs/guides/agents/sdk)
+- 基准评测：[SWE-bench](https://www.swebench.com/)、[GAIA 论文](https://arxiv.org/abs/2311.12983)、[Anthropic Agent evals](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
+- 通用与个人 Agent：[Manus 2.0 与 Cue](https://manus.im/en/blog/introducing-manus-2-0)、[ChatGPT Work](https://openai.com/index/chatgpt-for-your-most-ambitious-work/)、[OpenClaw](https://docs.openclaw.ai/start/openclaw)
 
 ## 许可
 
