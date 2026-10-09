@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>上下文窗口 · 3:4 图组</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --or: #ef6a1c;
+  --or-soft: #fff1e7;
+  --or-line: #f6b58c;
+  --ink: #17161a;
+  --ink-2: #3b3a40;
+  --ink-3: #75737c;
+  --line: #e7e5e2;
+  --bg: #f6f5f2;
+  --card: #ffffff;
+  --shadow: 0 10px 30px rgba(40, 30, 20, .07), 0 2px 6px rgba(40, 30, 20, .04);
+  --sans: "PingFang SC", -apple-system, "Hiragino Sans GB", sans-serif;
+}
+body { text-wrap: pretty; background: #d9d7d3; font-family: var(--sans); color: var(--ink); padding: 40px 0; }
+body.only { padding: 0; background: var(--bg); }
+.page {
+  width: 1080px; height: 1440px; margin: 0 auto 40px; position: relative; overflow: hidden;
+  background: var(--bg); padding: 84px 84px 0;
+}
+body.only .page { margin: 0; }
+body.only .page:not(.show) { display: none; }
+
+/* 背景：角落点阵 + 电路线 */
+.page::before, .page::after { content: ""; position: absolute; pointer-events: none; }
+.page::before {
+  top: 0; right: 0; width: 360px; height: 300px;
+  background-image: radial-gradient(#d9d6d0 1.6px, transparent 1.7px);
+  background-size: 18px 18px;
+  -webkit-mask-image: radial-gradient(ellipse at top right, #000 10%, transparent 70%);
+}
+.page::after {
+  bottom: 0; left: 0; width: 320px; height: 260px;
+  background-image: radial-gradient(#dcd9d3 1.6px, transparent 1.7px);
+  background-size: 18px 18px;
+  -webkit-mask-image: radial-gradient(ellipse at bottom left, #000 10%, transparent 70%);
+}
+.circuit { position: absolute; pointer-events: none; opacity: .55; }
+
+/* 页脚 */
+.foot {
+  position: absolute; left: 84px; right: 84px; bottom: 56px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 22px; color: var(--ink-3); letter-spacing: .5px;
+}
+.foot b { color: var(--ink-2); font-weight: 600; }
+.foot .pn { font-variant-numeric: tabular-nums; }
+.foot .pn em { font-style: normal; color: var(--or); font-weight: 700; }
+
+/* ============ 封面 ============ */
+.cover-title { text-align: center; white-space: nowrap; font-size: 100px; font-weight: 600; line-height: 1.1; letter-spacing: 0; -webkit-text-stroke: 2.4px currentColor; }
+.cover-title .o { color: var(--or); }
+.cover-sub {
+  display: flex; align-items: center; justify-content: center; gap: 22px;
+  margin-top: 22px; font-size: 34px; color: var(--ink-2); letter-spacing: 4px; font-weight: 500;
+}
+.cover-sub i { display: block; width: 90px; height: 2px; background: var(--or); position: relative; }
+.cover-sub i::after { content: ""; position: absolute; top: -5px; width: 12px; height: 12px; border-radius: 50%; background: var(--or); }
+.cover-sub i.l::after { right: 0; }
+.cover-sub i.r::after { left: 0; }
+
+.quote {
+  margin: 34px 0 0; height: 116px; background: var(--card); border-radius: 30px; box-shadow: var(--shadow);
+  display: flex; align-items: center; justify-content: center; gap: 26px; font-size: 36px; font-weight: 700;
+}
+.quote .qm { font-size: 92px; color: var(--or); font-weight: 900; line-height: 1; height: 58px; font-family: Georgia, serif; }
+.quote .o { color: var(--or); }
+
+/* ============ 文字页 ============ */
+.kicker { display: flex; align-items: center; gap: 14px; font-size: 24px; color: var(--or); font-weight: 700; letter-spacing: 2px; }
+.kicker::before { content: ""; width: 34px; height: 3px; background: var(--or); }
+.h { font-size: 76px; font-weight: 600; line-height: 1.25; margin-top: 22px; letter-spacing: 1px; -webkit-text-stroke: 1.6px currentColor; }
+.h .o { color: var(--or); }
+.lead { font-size: 32px; line-height: 1.75; color: var(--ink-2); margin-top: 26px; }
+.lead b { color: var(--ink); font-weight: 700; }
+.lead .o, .body .o { color: var(--or); font-weight: 700; }
+
+.sheet { background: var(--card); border-radius: 32px; box-shadow: var(--shadow); padding: 44px 48px; margin-top: 40px; }
+
+.note { margin-top: 36px; display: flex; gap: 22px; align-items: flex-start; font-size: 30px; line-height: 1.72; color: var(--ink-2); }
+.note .ic { flex: none; width: 64px; height: 64px; border-radius: 50%; background: var(--or); display: grid; place-items: center; margin-top: 4px; }
+.note b { color: var(--ink); }
+
+/* 记忆页 */
+.win { display: grid; grid-template-columns: 330px 1fr; gap: 40px; align-items: center; }
+.ctx { background: #fbfaf8; border: 2px solid var(--line); border-radius: 22px; padding: 18px; display: grid; gap: 10px; }
+.ctx .r { height: 46px; border-radius: 10px; background: var(--or-soft); color: var(--ink-2); font-size: 20px; display: flex; align-items: center; padding: 0 16px; gap: 10px; }
+.ctx .r em { font-style: normal; color: var(--or); font-weight: 700; font-size: 18px; }
+.ctx .r.fade { background: repeating-linear-gradient(135deg, #f1efec 0 8px, #fbfaf8 8px 16px); color: #aaa7a0; border: 1.5px dashed #d6d2cc; }
+.ctx .cap { font-size: 19px; color: var(--ink-3); text-align: center; margin-top: 4px; }
+.win .say { font-size: 30px; line-height: 1.75; color: var(--ink-2); }
+.win .say b { color: var(--ink); }
+
+/* 对比 */
+.cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 20px; }
+.cmp > div { border-radius: 24px; padding: 26px 30px; font-size: 26px; line-height: 1.6; }
+.cmp .bad { background: #efedea; color: var(--ink-3); }
+.cmp .good { background: var(--card); box-shadow: var(--shadow); color: var(--ink-2); }
+.cmp .tag { font-size: 22px; font-weight: 700; letter-spacing: 1px; margin-bottom: 8px; }
+.cmp .bad .tag { color: #9a968f; }
+.cmp .good .tag { color: var(--or); }
+
+/* 收尾页 */
+.next { margin-top: 72px; }
+.next .tt { font-size: 24px; color: var(--ink-3); letter-spacing: 3px; font-weight: 700; }
+.next ul { list-style: none; margin-top: 18px; display: grid; gap: 16px; }
+.next li { display: flex; align-items: baseline; gap: 18px; font-size: 29px; color: var(--ink-2); }
+.next li b { color: var(--ink); font-weight: 800; flex: none; }
+.next li b::after { content: " →"; color: var(--or); }
+.src { margin-top: 22px; font-size: 20px; color: var(--ink-3); line-height: 1.6; }
+
+/* ============ 文字叙述页（优先用这一套） ============ */
+.intro { font-size: 30px; line-height: 1.75; color: var(--ink-2); margin-top: 24px; }
+.intro b { color: var(--ink); font-weight: 600; }
+.colist { background: var(--card); border-radius: 24px; box-shadow: var(--shadow); padding: 30px 36px; display: grid; gap: 14px; }
+.colist .row { font-size: 28px; line-height: 1.6; color: var(--ink-2); }
+.colist .row b { color: var(--ink); font-weight: 600; }
+.h.h1 { font-size: 72px; line-height: 1.2; margin-top: 18px; }
+.para { font-size: 30px; line-height: 1.8; color: var(--ink-2); margin-top: 34px; }
+.para b { color: var(--ink); font-weight: 600; }
+.para + .colist { margin-top: 18px; }
+.h1 + .intro { margin-top: 36px; font-size: 32px; line-height: 1.8; }
+.colist + .para { margin-top: 36px; }
+
+/* ============ 上下文窗口 · 封面分区图 ============ */
+.ctx-wrap { margin: 30px auto 0; width: 720px; position: relative; }
+.ctx-box {
+  background: var(--card); border-radius: 28px; box-shadow: var(--shadow);
+  padding: 28px 32px; display: grid; gap: 10px;
+}
+.ctx-part {
+  border-radius: 14px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;
+  font-size: 24px; font-weight: 600;
+}
+.ctx-part .nm { display: flex; align-items: center; gap: 12px; }
+.ctx-part .sz { font-size: 20px; color: var(--ink-3); font-weight: 500; }
+.ctx-part.sys { background: var(--ink); color: #fff; }
+.ctx-part.sys .sz { color: #b9b6bf; }
+.ctx-part.tool { background: #3b3a40; color: #fff; }
+.ctx-part.tool .sz { color: #b9b6bf; }
+.ctx-part.hist { background: var(--or-soft); color: var(--ink); min-height: 90px; align-items: flex-start; flex-direction: column; gap: 6px; }
+.ctx-part.hist .sz { color: var(--or); }
+.ctx-part.file { background: #fff1e7; color: var(--ink); min-height: 70px; align-items: flex-start; flex-direction: column; gap: 6px; }
+.ctx-part.file .sz { color: var(--or); }
+.ctx-part.input { background: var(--or); color: #fff; }
+.ctx-part.input .sz { color: #ffe3d2; }
+.ctx-part.out { background: repeating-linear-gradient(135deg, #f1efec 0 8px, #fbfaf8 8px 16px); color: var(--ink-3); border: 2px dashed var(--line); }
+.ctx-part.out .sz { color: var(--ink-3); }
+.ctx-cap { display: flex; justify-content: space-between; font-size: 20px; color: var(--ink-3); margin-top: 14px; padding: 0 8px; }
+.ctx-cap b { color: var(--or); font-weight: 700; }
+
+/* 柱状图 */
+.bars { display: flex; align-items: flex-end; gap: 12px; height: 170px; margin-top: 10px; padding: 0 4px; }
+.bars .b { flex: 1; background: var(--or-line); border-radius: 6px 6px 0 0; position: relative; }
+.bars .b .new { position: absolute; left: 0; right: 0; background: var(--or); border-radius: 6px 6px 0 0; }
+.axis { display: flex; justify-content: space-between; font-size: 20px; color: var(--ink-3); margin-top: 12px; padding: 0 4px; }
+.legend { display: flex; gap: 28px; font-size: 21px; color: var(--ink-3); margin-top: 16px; }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.legend i { width: 18px; height: 18px; border-radius: 4px; display: inline-block; }
+
+/* U形曲线 */
+.u-curve { margin: 30px auto 0; width: 680px; height: 260px; position: relative; }
+.u-curve svg { width: 100%; height: 100%; }
+</style>
+</head>
+<body>
+
+<!-- 可复用图标 -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <marker id="ah" viewBox="0 0 12 12" refX="7" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+      <path d="M1 1 L11 6 L1 11 Z" fill="#ef6a1c"/>
+    </marker>
+    <symbol id="i-think" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 7a12 12 0 0 0-7 21.7c1.4 1 2.2 2.4 2.2 4V35h9.6v-2.3c0-1.6.8-3 2.2-4A12 12 0 0 0 24 7z"/><path d="M19.5 40h9M21 44h6"/><path d="M24 15v7l4 3"/></g></symbol>
+    <symbol id="i-do" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M29 8a9 9 0 0 0-8.6 11.7L8 32.1a3.5 3.5 0 0 0 5 5l12.4-12.4A9 9 0 0 0 37 16.5l-5.5 5.5-5-1-1-5L31 10.4A9 9 0 0 0 29 8z"/></g></symbol>
+    <symbol id="i-see" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 24s7.3-13 20-13 20 13 20 13-7.3 13-20 13S4 24 4 24z"/><circle cx="24" cy="24" r="6"/></g></symbol>
+    <symbol id="i-again" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M38 20A15 15 0 0 0 10.6 15M10 28a15 15 0 0 0 27.4 5"/><path d="M10 7v8h8M38 41v-8h-8"/></g></symbol>
+    <symbol id="i-chat" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10h32a3 3 0 0 1 3 3v18a3 3 0 0 1-3 3H22l-9 7v-7H8a3 3 0 0 1-3-3V13a3 3 0 0 1 3-3z"/><path d="M15 20h18M15 26h11"/></g></symbol>
+    <symbol id="i-flag" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="18"/><path d="M16 24.5l5.5 5.5L33 18.5"/></g></symbol>
+    <symbol id="i-stop" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="18"/><path d="M16 24.5l5.5 5.5L33 18.5"/></g></symbol>
+    <symbol id="i-count" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="34" height="34" rx="6"/><path d="M15 17h18M15 24h18M15 31h10"/></g></symbol>
+    <symbol id="i-clock" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="17"/><path d="M24 14v10l7 5"/></g></symbol>
+    <symbol id="i-pause" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="17"/><path d="M20 17v14M28 17v14"/></g></symbol>
+    <symbol id="i-bill" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 6h26v36l-4.3-3-4.4 3-4.3-3-4.3 3-4.4-3-4.3 3z"/><path d="M17 16h14M17 23h14M17 30h8"/></g></symbol>
+    <symbol id="i-bulb" viewBox="0 0 48 48"><g fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M24 8a11 11 0 0 0-6.4 20c1.3.9 2 2.3 2 3.8V34h8.8v-2.2c0-1.5.7-2.9 2-3.8A11 11 0 0 0 24 8z"/><path d="M20 39h8"/></g></symbol>
+    <symbol id="i-chip" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="12" y="12" width="24" height="24" rx="4"/><rect x="19" y="19" width="10" height="10" rx="1.5"/><path d="M18 6v6M24 6v6M30 6v6M18 36v6M24 36v6M30 36v6M6 18h6M6 24h6M6 30h6M36 18h6M36 24h6M36 30h6"/></g></symbol>
+    <symbol id="i-model" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 5l16 9v20l-16 9-16-9V14z"/><path d="M8 14l16 9 16-9M24 23v20"/></g></symbol>
+    <symbol id="i-infra" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 6L42 15 24 24 6 15z"/><path d="M6 24l18 9 18-9M6 33l18 9 18-9"/></g></symbol>
+    <symbol id="i-agent" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="15" width="30" height="24" rx="7"/><circle cx="18.5" cy="27" r="3"/><circle cx="29.5" cy="27" r="3"/><path d="M24 15V9"/><circle cx="24" cy="7" r="2.5"/><path d="M5 25v6M43 25v6"/></g></symbol>
+    <symbol id="i-app" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="14" height="14" rx="3.5"/><rect x="27" y="7" width="14" height="14" rx="3.5"/><rect x="7" y="27" width="14" height="14" rx="3.5"/><rect x="27" y="27" width="14" height="14" rx="3.5"/></g></symbol>
+    <symbol id="i-user" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="16" r="8"/><path d="M8 42c1.5-9 8-14 16-14s14.5 5 16 14"/></g></symbol>
+    <symbol id="i-warn" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 7L43 40H5z"/><path d="M24 19v10M24 34v.5"/></g></symbol>
+    <symbol id="i-down" viewBox="0 0 48 48"><g fill="none" stroke="#ef6a1c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 30l10-10 8 8 14-14"/><path d="M40 14v9M40 14h-9" transform="rotate(90 40 14) translate(0 0)"/></g></symbol>
+  </defs>
+</svg>
+
+<!-- ================= P1 封面 ================= -->
+<section class="page" id="p1">
+  <svg class="circuit" style="left:0;top:150px" width="160" height="220" viewBox="0 0 160 220"><g fill="none" stroke="#d2cec7" stroke-width="2"><path d="M0 40h70l30 30v90"/><path d="M0 90h40l20 20v110"/><circle cx="100" cy="164" r="5"/><circle cx="60" cy="214" r="4"/></g></svg>
+
+  <h1 class="cover-title">一次请求能装<span class="o">多少</span>？</h1>
+  <div class="cover-sub"><i class="l"></i>窗口是一张台面，输入输出都要放<i class="r"></i></div>
+
+  <div class="ctx-wrap">
+    <div class="ctx-box">
+      <div class="ctx-part sys"><div class="nm"><svg width="28" height="28"><use href="#i-flag"/></svg>系统提示</div><div class="sz">每轮重发 · 固定</div></div>
+      <div class="ctx-part tool"><div class="nm"><svg width="28" height="28"><use href="#i-do"/></svg>工具定义</div><div class="sz">有工具时才有</div></div>
+      <div class="ctx-part hist"><div class="nm"><svg width="28" height="28"><use href="#i-chat"/></svg>对话历史</div><div class="sz">越聊越长 · 持续增长</div></div>
+      <div class="ctx-part file"><div class="nm"><svg width="28" height="28"><use href="#i-count"/></svg>文件 / 检索资料</div><div class="sz">RAG 或上传文件时才有</div></div>
+      <div class="ctx-part input"><div class="nm"><svg width="28" height="28"><use href="#i-user"/></svg>本轮输入</div><div class="sz">当前这句话</div></div>
+      <div class="ctx-part out"><div class="nm"><svg width="28" height="28"><use href="#i-see"/></svg>预留输出</div><div class="sz">模型回答的空间 · 最容易忘</div></div>
+    </div>
+    <div class="ctx-cap"><span><b>128K</b> 上下文示意</span><span>块的高度 = 占用比例</span></div>
+  </div>
+
+  <div class="quote"><span class="qm">“</span><span>装进去多少，和模型<span class="o">真正能用上</span>多少，是两回事。</span><span class="qm">”</span></div>
+  <div class="foot"><span>AI 原理图解 10</span><span class="pn"><em>01</em> / 07</span></div>
+</section>
+
+<!-- ================= P2 台面有多大 ================= -->
+<section class="page" id="p2">
+  <div class="kicker">先算尺寸</div>
+  <h2 class="h h1">台面有多大，<span class="o">一起算</span></h2>
+  <p class="intro">上下文窗口是模型一次请求能看到的全部内容的上限。<b>按 Token 算，不是按字数</b>。中文通常一个 Token 对应一到两个字，代码则往往更少。</p>
+
+  <p class="para">厂商标称的 128K、200K、100 万，指的是 Token 数，不是字数。一篇 10 万字的中文文档，大约需要 5–8 万 Token；同样长度的代码，可能要十几万 Token。要准数只能实测。</p>
+
+  <p class="para">最容易忘的一点：<b>输出也占窗口</b>。标称 128K，把输入塞到 127K，模型就几乎没空间写回答了。做预算时，必须先给输出留出额度，剩下的才是输入能用的。</p>
+
+  <p class="para">一个可以直接用的分配思路：</p>
+  <div class="colist">
+    <div class="row"><b>先扣输出额度</b>：按允许的最长回答估算，再留余量</div>
+    <div class="row"><b>再扣系统提示</b>：固定值，算一次就行</div>
+    <div class="row"><b>剩下的</b>：在“历史对话”和“检索资料”之间分</div>
+  </div>
+
+  <div class="foot"><span>AI 原理图解 10</span><span class="pn"><em>02</em> / 07</span></div>
+</section>
+
+<!-- ================= P3 台面上都放了什么 ================= -->
+<section class="page" id="p3">
+  <div class="kicker">台面里有什么</div>
+  <h2 class="h h1">很多东西<span class="o">不是你自己塞的</span></h2>
+  <p class="intro">很多人以为窗口里只有对话。实际上，一次请求发过去的内容，<b>大部分不是用户自己写的</b>。</p>
+
+  <p class="para">系统提示：产品的设定和规则，每一轮都要重发。历史对话：之前所有的来回，包括工具调用的结果，越聊越长。检索资料：RAG 塞进来的文档片段，往往是最大的一块。</p>
+
+  <p class="para">真正由用户控制的部分，通常只有本轮输入和上传的文件。其余都是平台或产品在背后自动拼装的。</p>
+
+  <div class="note">
+    <div class="ic"><svg width="32" height="32"><use href="#i-bulb"/></svg></div>
+    <div>想知道一次请求到底发了多少 Token？看返回里的 <b>usage</b> 字段。很多产品不展示这个数，但 API 里一定有。</div>
+  </div>
+
+  <div class="foot"><span>AI 原理图解 10</span><span class="pn"><em>03</em> / 07</span></div>
+</section>
+
+<!-- ================= P4 装满了怎么办 ================= -->
+<section class="page" id="p4">
+  <div class="kicker">超出上限</div>
+  <h2 class="h h1">装满了<span class="o">怎么办</span></h2>
+  <p class="intro">窗口有硬上限，超了必须处理。两种结局，<b>第二种更隐蔽、更危险</b>。</p>
+
+  <div class="cmp" style="margin-top:34px">
+    <div class="good">
+      <div class="tag">直接报错</div>
+      请求发不出去，平台返回错误码。至少知道出问题了，可以处理。
+    </div>
+    <div class="bad">
+      <div class="tag">静默丢弃</div>
+      很多框架自动裁掉最早的内容，让请求能发出去。没有提示，没有日志。
+    </div>
+  </div>
+
+  <p class="para">问题在于，最早的内容往往正是最重要的——开头定好的规矩、任务的原始描述、双方确认过的约束。丢掉之后，模型表现就开始漂移。只会觉得“今天有点笨”，查不出原因。</p>
+
+  <p class="para">所以有一条实践纪律：<b>搞清楚用的框架在溢出时到底做了什么</b>。是报错，还是裁剪？裁的是哪一头？有没有日志？这个答案，决定了以后能不能查得清问题。</p>
+
+  <div class="foot"><span>AI 原理图解 10</span><span class="pn"><em>04</em> / 07</span></div>
+</section>
+
+<!-- ================= P5 中间那段看不清 ================= -->
+<section class="page" id="p5">
+  <div class="kicker">中段丢失</div>
+  <h2 class="h h1">中间那段<span class="o">最容易被忽略</span></h2>
+  <p class="intro">上下文窗口不是均匀的画布。同样一句话，<b>放在开头或结尾，和埋在中间，被用上的概率差别很大</b>。</p>
+
+  <div class="u-curve">
+    <svg viewBox="0 0 680 260">
+      <!-- 坐标轴 -->
+      <line x1="60" y1="220" x2="620" y2="220" stroke="#e7e5e2" stroke-width="2"/>
+      <line x1="60" y1="220" x2="60" y2="30" stroke="#e7e5e2" stroke-width="2"/>
+      <!-- U形曲线 -->
+      <path d="M 60 50 Q 180 200 340 180 Q 500 200 620 50" fill="none" stroke="#ef6a1c" stroke-width="4" stroke-linecap="round"/>
+      <!-- 高点标注 -->
+      <circle cx="60" cy="50" r="6" fill="#ef6a1c"/>
+      <circle cx="620" cy="50" r="6" fill="#ef6a1c"/>
+      <text x="60" y="30" text-anchor="middle" font-size="18" fill="#75737c" font-weight="600">开头</text>
+      <text x="620" y="30" text-anchor="middle" font-size="18" fill="#75737c" font-weight="600">结尾</text>
+      <!-- 低点标注 -->
+      <circle cx="340" cy="180" r="6" fill="#f6b58c"/>
+      <text x="340" y="215" text-anchor="middle" font-size="18" fill="#75737c" font-weight="600">中间</text>
+      <!-- Y轴标签 -->
+      <text x="30" y="55" text-anchor="middle" font-size="16" fill="#75737c">高</text>
+      <text x="30" y="225" text-anchor="middle" font-size="16" fill="#75737c">低</text>
+      <text x="30" y="140" text-anchor="middle" font-size="16" fill="#75737c" transform="rotate(-90 30 140)">被重视的概率</text>
+    </svg>
+  </div>
+
+  <p class="para">这个现象在业内叫 lost in the middle，不是某一家模型的 bug。<b>上下文越长，中段越容易被忽略</b>。长提示词中间写的限制，RAG 召回十几段资料时中间的那些段，都可能被当没看见。</p>
+
+  <p class="para">应对方法：重要的东西放两头；关键约束在开头写一遍、结尾再强调一遍；宁可召回 5 段精准的，不要 20 段掺水的。</p>
+
+  <div class="foot"><span>AI 原理图解 10</span><span class="pn"><em>05</em> / 07</span></div>
+</section>
+
+<!-- ================= P6 窗口大不等于记得住 ================= -->
+<section class="page" id="p6">
+  <div class="kicker">不是越大越好</div>
+  <h2 class="h h1">窗口大不等于<span class="o">都能用上</span></h2>
+  <p class="intro">现在动辄百万级窗口，很多人以为“把所有东西都塞进去”就解决问题了。<b>不是</b>。三个原因。</p>
+
+  <p class="para">塞得下不等于看得清。内容一长，中间那段会被明显忽略——上一页专门讲这件事。塞一百页进去，模型可能只真正用上了开头和结尾。</p>
+
+  <p class="para">贵。整个上下文每一轮都要重新发送、重新计费。一段 50K Token 的资料，聊十轮就是 50 万 Token 的输入量。<b>长窗口的账单增长很吓人</b>，尤其在 Agent 多轮循环的场景里。</p>
+
+  <p class="para">慢。输入越长，首字延迟越明显，用户能感觉到。</p>
+
+  <div class="note">
+    <div class="ic"><svg width="32" height="32"><use href="#i-bulb"/></svg></div>
+    <div>正确的思路不是“窗口够大就全塞”，而是<b>只塞真正需要的那几段</b>。检索的意义不只是找到资料，更是只把相关的那几段放进来。</div>
+  </div>
+
+  <div class="foot"><span>AI 原理图解 10</span><span class="pn"><em>06</em> / 07</span></div>
+</section>
+
+<!-- ================= P7 连起来看 ================= -->
+<section class="page" id="p7">
+  <div class="kicker">连起来看</div>
+  <h2 class="h h1">窗口管理的<span class="o">三件事</span></h2>
+  <p class="intro">把窗口当成一份要分配的预算，而不是一个想填多满就多满的桶。<b>该给的、不该给的，比给得多重要</b>。</p>
+
+  <p class="para">第一件，做预算：先扣输出额度，再扣系统提示，剩下的在历史对话和检索资料之间分。给检索资料设硬上限，历史对话超过阈值就压缩。</p>
+
+  <p class="para">第二件，控制位置：重要的放两头，关键约束重复一次。长任务拆成几轮，每轮上下文都短，中段丢失就不成问题。</p>
+
+  <p class="para">第三件，控制数量：宁可少而精，不要多而杂。召回 5 段准确的，通常胜过 20 段良莠不齐的。</p>
+
+  <div class="next">
+    <div class="tt">接着看</div>
+    <ul><li><b>RAG</b>：让模型先查资料再回答，检索的意义不只是找到，更是只放相关的那几段</li></ul>
+  </div>
+  <p class="src">资料基准 2026 年 8 月 · 参考《上下文窗口》《上下文中段丢失》《对话压缩》<br>下一篇：RAG — 让模型先查资料，再回答</p>
+
+  <div class="foot"><span>AI 原理图解 10</span><span class="pn"><em>07</em> / 07</span></div>
+</section>
+
+<script>
+  const q = new URLSearchParams(location.search);
+  const n = q.get('only');
+  if (n) { document.body.classList.add('only'); document.getElementById('p' + n).classList.add('show'); }
+  if (q.get('check')) {
+    const rep = [];
+    document.querySelectorAll('.page').forEach((pg, i) => {
+      const pr = pg.getBoundingClientRect();
+      const foot = pg.querySelector('.foot');
+      const ft = foot ? foot.getBoundingClientRect().top : pr.bottom;
+      let maxB = pr.top, right = [], clipped = [];
+      pg.querySelectorAll('*').forEach(el => {
+        if (foot && (el === foot || foot.contains(el))) return;
+        if (el.closest('.circuit')) return;
+        if (el.ownerSVGElement) return;
+        const r = el.getBoundingClientRect();
+        if (!r.width || !r.height) return;
+        if (r.bottom > maxB) maxB = r.bottom;
+        if (r.right > pr.right - 40 && !el.closest('.money')) right.push((el.className && el.className.baseVal === undefined ? el.className : el.tagName) + '');
+        const cs = getComputedStyle(el);
+        if (el.children.length === 0 && el.textContent.trim().length > 1 && !el.closest('.qm') && !el.closest('.h') && el.scrollHeight > el.clientHeight + 4 && cs.overflow === 'visible' && el.clientHeight > 0 && cs.height !== 'auto') clipped.push(el.textContent.trim().slice(0, 20));
+      });
+      const h1 = pg.querySelector('.h.h1, .cover-title'); const wrapped = h1 ? h1.getBoundingClientRect().height > parseFloat(getComputedStyle(h1).fontSize) * 1.6 : false;
+      rep.push({ page: i + 1, titleWrapped: wrapped, gapToFooter: Math.round(ft - maxB), pageBottomOverflow: Math.round(maxB - pr.bottom), rightEdge: right.slice(0, 5), textOverflow: clipped.slice(0, 5) });
+    });
+    document.body.setAttribute('data-report', JSON.stringify(rep));
+  }
+</script>
+</body>
+</html>
