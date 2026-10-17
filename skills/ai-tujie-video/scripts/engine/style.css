@@ -1,0 +1,43 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1080px; height: 1440px; overflow: hidden; background: #FBFAF7; }
+body { font-family: "PingFang SC", sans-serif; color: #1f1f22; position: relative; }
+.scene { position: absolute; inset: 0; display: none; }
+.tag { position: absolute; left: 80px; top: 74px; font: 34px "Hannotate SC"; color: #EE6A1F; display: flex; align-items: center; gap: 14px; }
+.tag b { display: inline-grid; place-items: center; width: 50px; height: 50px; border: 3px solid #EE6A1F; border-radius: 50%; font: 600 28px "PingFang SC"; }
+.title { position: absolute; left: 80px; right: 60px; top: 136px; font-weight: 600; font-size: 60px; line-height: 1.3; letter-spacing: .5px; }
+.title em { font-style: normal; color: #EE6A1F; }
+.stage { position: absolute; left: 0; top: 270px; width: 1080px; height: 960px; }
+.hand { font-family: "Hannotate SC"; font-size: 38px; color: #1f1f22; white-space: nowrap; line-height: 1.2; }
+.hand.b, .b .hand { color: #EE6A1F; }
+.hand.s, .s .hand { font-size: 30px; color: #6b6b72; }
+.hand.l, .l .hand { font-size: 48px; }
+#cap { position: absolute; left: 60px; right: 60px; top: 1268px; text-align: center; font-size: 44px; font-weight: 500; line-height: 1.4; color: #1f1f22; }
+#capline { position: absolute; left: 470px; width: 140px; top: 1244px; height: 3px; background: #e6e3dc; border-radius: 2px; }
+
+/* 真实界面 */
+.phone { position: absolute; background: #fff; border-radius: 40px; border: 10px solid #1f1f22; overflow: hidden; box-shadow: 0 24px 50px rgba(30, 30, 40, .16); }
+.ph-sb { height: 34px; display: flex; justify-content: space-between; align-items: center; padding: 0 22px; font: 600 15px "PingFang SC"; }
+.ph-sb i { width: 22px; height: 11px; border: 2px solid #1f1f22; border-radius: 3px; }
+.ph-in { position: absolute; top: 34px; left: 0; right: 0; bottom: 0; }
+.win { position: absolute; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 24px 60px rgba(30, 30, 40, .16), 0 0 0 1.5px #e3e1dc; }
+.win-bar { height: 52px; background: #F2F1EE; display: flex; align-items: center; padding: 0 18px; gap: 9px; }
+.win-bar > i { width: 13px; height: 13px; border-radius: 50%; background: #d6d4cf; }
+.win-url { margin-left: 22px; flex: 1; height: 32px; border-radius: 8px; background: #fff; font: 19px "SF Mono", Menlo, monospace; color: #555; display: flex; align-items: center; padding: 0 14px; }
+.win-in { position: absolute; top: 52px; left: 0; right: 0; bottom: 0; overflow: hidden; }
+.cursor { filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .25)); z-index: 30; }
+
+/* 通用小部件 */
+.row { display: flex; align-items: center; }
+.u-h { font-weight: 600; }
+.u-muted { color: #8b8b92; }
+.u-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 10px rgba(0, 0, 0, .06); }
+.u-btn { background: #1f1f22; color: #fff; border-radius: 12px; display: grid; place-items: center; font-weight: 600; }
+.u-input { border: 1.5px solid #e2e0db; border-radius: 12px; color: #a3a3a8; display: flex; align-items: center; padding: 0 14px; }
+.u-chip { border-radius: 999px; padding: 6px 14px; font-size: 16px; background: #f2f1ee; color: #555; display: inline-block; }
+.u-ph { border-radius: 12px; }
+.bubble { position: absolute; border-radius: 22px; padding: 18px 24px; font-size: 26px; line-height: 1.5; }
+.bubble.me { background: #1f1f22; color: #fff; border-bottom-right-radius: 6px; }
+.bubble.ai { background: #fff; border: 1.5px solid #e3e1dc; border-bottom-left-radius: 6px; }
+.mono { font-family: "SF Mono", Menlo, monospace; }
+.blue { color: #EE6A1F; }
+.bgblue { background: #EE6A1F; color: #fff; }

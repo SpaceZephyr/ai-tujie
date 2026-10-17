@@ -113,6 +113,17 @@ cd 16-Skill运行原理
 
 字体用的是苹方（PingFang SC），在 macOS 上导出效果最好。
 
+## 做成视频
+
+[`skills/ai-tujie-video`](skills/ai-tujie-video) 是一个 Claude Code skill，把任意一套图组做成 2–3 分钟的竖版讲解短视频：手绘线稿 + 真实界面 + 原图卡片的动画画面，微软官方音色配音（默认成熟男声，停顿不超过 0.5 秒），轻快配乐，带封面。
+
+```bash
+cp -r skills/ai-tujie-video ~/.claude/skills/
+cd ~/.claude/skills/ai-tujie-video/scripts && npm i && pip install edge-tts numpy
+```
+
+然后在 Claude Code 里说「把 ai-tujie 的 17-MCP 做成视频」。例子见 [16 · Skill 怎么运行](skills/ai-tujie-video/examples/16-Skill运行原理)。
+
 ## 23–26 的资料
 
 核对日期：2026-10-09。图中示意结构用于解释原理，不代表任何一家产品的完整内部实现。
